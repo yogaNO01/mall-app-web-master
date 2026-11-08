@@ -99,6 +99,7 @@ export const english: Record<string,string> = {
   "价格请咨询": "Price on request",
   "查看详情": "View details",
   "咨询购买": "Purchase inquiry",
+  "咨询": "Contact us",
   "上一页": "Previous",
   "下一页": "Next",
   "加载更多": "Load more",

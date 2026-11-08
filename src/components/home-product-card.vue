@@ -189,7 +189,7 @@ defineEmits<{
   .price { font-size: clamp(22px, 1.56vw, 30px); line-height: 40px; }
   .original-price { font-size: 16px; }
   .product-actions { gap: 12px; }
-  .product-actions button { gap: 6px; min-height:38px; padding: 7px 4px; font-size: 13px; border-radius: 6px; line-height: 22px; white-space:nowrap; }
+  .product-actions button { gap: 6px; min-height:40px; padding: 7px 8px; font-size: 13px; border-radius: 6px; line-height: 20px; white-space:normal; text-align:center; overflow-wrap:anywhere; }
   .desktop-action-icon { display: block; flex-shrink: 0; }
   .detail-icon { width: 30px; height: 30px; }
   .consult-icon { width: 20px; height: 20px; }
@@ -307,5 +307,8 @@ defineEmits<{
 }
 .product-card .prices .price { display:block; white-space:nowrap; font-size:19px; line-height:28px; letter-spacing:-.02em; }
 .product-card .prices .original-price { display:block; white-space:nowrap; font-size:11px; line-height:18px; color:#99a4af; }
+@media(max-width:1023px) {
+  .product-card .prices .original-price { display:none; }
+}
 @media(max-width:767px) { .product-card .prices .price { font-size:17px; } }
 </style>

@@ -63,7 +63,16 @@ button::after { border:0; }
 .compact .clear-search { width:24px; min-height:30px; }
 @media(max-width:1023px) {
   input { font-size:16px; }
-  input::placeholder { font-size:13px; }
+  input { overflow:hidden; }
+  input::placeholder { font-size:12px; text-overflow:ellipsis; }
+  input :deep(.uni-input-placeholder) {
+    box-sizing:border-box;
+    max-width:100%;
+    overflow:hidden;
+    font-size:12px;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+  }
   .search-field { min-height:48px; gap:8px; padding-right:4px; }
   .clear-search { width:40px; height:44px; }
   .submit-search { min-width:64px; min-height:40px; padding-inline:13px; }

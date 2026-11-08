@@ -68,7 +68,7 @@ export const portuguese: Record<string, string> = {
   '商品加载失败':'Não foi possível carregar os produtos','商品加载失败，请稍后重试':'Não foi possível carregar os produtos. Tente novamente.',
   '新品即将上架，敬请期待':'Novidades em breve','重新加载':'Tentar novamente','加载中…':'Carregando…',
   '加载失败，点击重试':'Falha ao carregar. Toque para tentar novamente.','商品加载中':'Carregando produtos',
-  '查看详情':'Detalhes','查看商品详情':'Ver detalhes do produto','咨询购买':'Consultar',
+  '查看详情':'Detalhes','查看商品详情':'Ver detalhes do produto','咨询购买':'Consultar','咨询':'Consultar',
   '商品详情':'Detalhes do produto','猜你喜欢':'Você também pode gostar','换一批 ↻':'Ver outros ↻','商品描述':'Descrição',
   '图文详情':'Mais detalhes','收起':'Recolher','展开':'Expandir','款号':'Código','分类':'Categoria','货号：':'Código: ',
   '商品图片':'Imagens do produto','购买数量':'Quantidade','减少数量':'Diminuir quantidade','增加数量':'Aumentar quantidade',

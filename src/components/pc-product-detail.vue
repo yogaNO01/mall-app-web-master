@@ -105,8 +105,11 @@
             <text class="sku-value">{{ product.productSn || '--' }}</text>
             <button v-if="product.productSn" class="sku-copy" :aria-label="t('复制货号')" @click="copyProductSn">{{ t('复制') }}</button>
           </view>
-          <view class="price-row"><text class="price">{{ formatProductMoney(product, 'price') }}</text><text v-if="hasProductOriginalPrice(product)" class="old-price">{{ formatProductMoney(product, 'originalPrice') }}</text></view>
-          <text class="freight-summary">{{ t('运费') }}: {{ formatFreight(quantity) }}</text>
+          <view class="price-row">
+            <view class="detail-region-picker"><card-region-picker :model-value="detailRegion" @update:model-value="previewRegion = $event" /></view>
+            <view class="price-values" aria-live="polite"><text class="price">{{ detailPrice('price') }}</text><text v-if="hasProductOriginalPrice(product, detailRegion)" class="old-price">{{ detailPrice('originalPrice') }}</text></view>
+          </view>
+          <text class="freight-summary" aria-live="polite">{{ t('运费') }}: {{ detailFreight }}</text>
           <text v-if="product.subTitle || product.description" class="subtitle">{{ (localized(product, 'subTitle') || localized(product, 'description')) }}</text>
 
           <view v-for="spec in specList" :key="spec.id" class="spec-block">
@@ -126,7 +129,7 @@
 
           <view class="quantity-row"><text>{{ t('购买数量') }}</text><view class="stepper"><button :aria-label="t('减少数量')" :disabled="quantity <= 1" @click="quantity = Math.max(1, quantity - 1)">−</button><text>{{ t(quantity) }}</text><button :aria-label="t('增加数量')" :disabled="quantity >= availableStock" @click="quantity += 1">+</button></view><text class="stock-hint">{{ t(availableStock > 0 ? `库存 ${availableStock} 件` : '该规格暂时无货') }}</text></view>
           <view class="primary-actions">
-            <button class="consult" @click="consultOnWhatsApp(product)"><image src="/static/home/whatsapp-white.svg" mode="aspectFit" />{{ t(availableStock > 0 ? 'WhatsApp 咨询购买' : 'WhatsApp 咨询库存') }}</button>
+            <button class="consult" @click="consultOnWhatsApp(product)"><image src="/static/home/whatsapp-white.svg" mode="aspectFit" /><text class="consult-desktop-label">{{ t(availableStock > 0 ? 'WhatsApp 咨询购买' : 'WhatsApp 咨询库存') }}</text><text class="consult-mobile-label">{{ t('咨询') }}</text></button>
             <button class="share" @click="shareProduct">{{ t('↗  分享链接') }}</button>
           </view>
         </view>
@@ -153,6 +156,7 @@ import { t, localized, localizedOption, locale, type ContentTranslations } from 
 
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import HomeProductCard from '@/components/home-product-card.vue'
+import CardRegionPicker from '@/components/card-region-picker.vue'
 import DetailCollapse from '@/components/detail-collapse.vue'
 import { searchProductListAPI } from '@/apis/product'
 import { consultOnWhatsApp } from '@/utils/whatsapp'
@@ -160,7 +164,7 @@ import { isColorSpec, parseProductColor } from '@/utils/product-colors'
 import type { PmsProduct, PmsProductAttribute, PmsSkuStock, SpecOption } from '@/types/product'
 import { availableSkuStock, findSelectedSku, isSkuOptionAvailable } from '@/utils/sku-selection'
 import { copyText } from '@/utils/clipboard'
-import { formatProductMoney, hasProductOriginalPrice, formatFreight } from '@/utils/money'
+import { formatProductMoney, hasProductOriginalPrice, formatFreight, market, type PriceRegion, type ProductMoneyField } from '@/utils/money'
 import { useProductSearch } from '@/composables/use-product-search'
 const { searchProducts } = useProductSearch()
 
@@ -176,6 +180,11 @@ const emit = defineEmits<{ (event: 'select-spec', option: SpecOption): void }>()
 
 const currentImage = ref(0)
 const quantity = ref(1)
+const previewRegion = ref<PriceRegion>()
+const detailRegion = computed(() => previewRegion.value || market.value)
+const compactCurrency = (value: string) => value.replace(/^(CNY|USD|EUR)\s/, '')
+const detailPrice = (field: ProductMoneyField) => compactCurrency(formatProductMoney(props.product, field, detailRegion.value))
+const detailFreight = computed(() => compactCurrency(formatFreight(quantity.value, detailRegion.value)))
 const recommendations = ref<PmsProduct[]>([])
 const recommendationPage = ref(1)
 const recommendationsLoading = ref(false)
@@ -242,7 +251,7 @@ const copyProductSn = async () => {
   uni.showToast({ title: t(copied ? '货号已复制' : '复制失败，请手动复制'), icon: 'none' })
 }
 
-watch(() => props.product.id, () => { currentImage.value = 0; quantity.value = 1; recommendationPage.value = 1; recommendations.value = []; openSections.value = closedSections(); void loadRecommendations() }, { immediate: true })
+watch(() => props.product.id, () => { currentImage.value = 0; quantity.value = 1; previewRegion.value = undefined; recommendationPage.value = 1; recommendations.value = []; openSections.value = closedSections(); void loadRecommendations() }, { immediate: true })
 onBeforeUnmount(() => { recommendationRequest++ })
 </script>
 
@@ -250,6 +259,7 @@ onBeforeUnmount(() => { recommendationRequest++ })
 .stock-hint { color:#81909d; font-size:12px; }
 .quantity-row { flex-wrap:wrap; row-gap:10px!important; }
 .spec-option:disabled { opacity:.4; cursor:not-allowed; text-decoration:line-through; }
+.consult-mobile-label { display:none; }
 .stepper button:disabled,.consult:disabled { opacity:.45; cursor:not-allowed; box-shadow:none; }
 .spec-color-dot { display:inline-block; width:20px; height:20px; flex:none; border:1px solid #b9c4d1; border-radius:50%; }
 .color-spec-option { display:inline-flex; align-items:center; gap:8px; }
@@ -320,7 +330,9 @@ onBeforeUnmount(() => { recommendationRequest++ })
   .sku-value { color:#52667c; font-variant-numeric:tabular-nums; }
   .sku-copy { flex:none; min-height:24px; margin-left:4px; padding:2px 9px; border:1px solid #d7e0eb; border-radius:5px; background:#f7f9fc; color:var(--detail-blue); font-size:11px; line-height:18px; }
   .sku-copy:hover { border-color:#9bb0c9; background:#edf3fa; }
-  .price-row { display:flex; flex-wrap:wrap; align-items:baseline; gap:12px; margin-top:22px; }
+  .price-row { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:22px; }
+  .price-values { display:flex; flex-wrap:wrap; align-items:baseline; gap:12px; min-width:0; }
+  .detail-region-picker :deep(.region-trigger) { min-height:38px; padding:6px 10px; font-size:13px; }
   .price { color:var(--detail-blue); font-size:34px; font-weight:700; line-height:1.3; }
   .old-price { color:#96a1af; text-decoration:line-through; font-size:14px; }
   .subtitle { display:block; margin:12px 0 26px; color:var(--detail-muted); font-size:14px; line-height:1.85; overflow-wrap:anywhere; }
@@ -391,8 +403,23 @@ onBeforeUnmount(() => { recommendationRequest++ })
   .primary-actions { grid-template-columns:minmax(0,1fr) 108px; }
   .product-title { font-size:22px; }
 }
-@media (min-width:1280px) {
-  .recommendation-grid { grid-template-columns:repeat(6,minmax(0,1fr)); gap:14px; }
+@media (min-width:1280px) and (max-width:2140px) {
+  .recommendation-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
+}
+@media (min-width:2141px) {
+  .recommendation-grid { grid-template-columns:repeat(6,minmax(0,1fr)); gap:16px; }
+}
+@media (min-width:1024px) {
+  .recommendation-grid :deep(.product-info) { gap:8px; padding:15px 16px 18px; }
+  .recommendation-grid :deep(.product-name) { display:-webkit-box; min-height:44px; overflow:hidden; white-space:normal; text-overflow:clip; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-height:22px; }
+  .recommendation-grid :deep(.card-pricing-row) { display:grid; grid-template-columns:58px minmax(0,1fr); align-items:start; gap:10px; min-height:50px; margin-top:4px; }
+  .recommendation-grid :deep(.region-trigger) { width:58px; min-height:32px; padding:5px 6px; font-size:11px; }
+  .recommendation-grid :deep(.card-price-values) { min-width:0; }
+  .recommendation-grid :deep(.prices) { display:flex; flex-direction:column; align-items:flex-start; flex-wrap:nowrap; gap:0; min-height:50px; padding:0; }
+  .recommendation-grid :deep(.prices .price) { font-size:20px; line-height:29px; }
+  .recommendation-grid :deep(.prices .original-price) { font-size:12px; line-height:18px; }
+  .recommendation-grid :deep(.freight) { min-height:18px; margin-top:0; padding-right:34px; font-size:12px; line-height:18px; }
+  .recommendation-grid :deep(.catalog-detail) { right:14px; bottom:14px; width:28px; height:28px; }
 }
 @media (max-width:1023px) {
   .pc-product-detail { padding:0 0 calc(28px + env(safe-area-inset-bottom)); color:#153451; }
@@ -442,6 +469,8 @@ onBeforeUnmount(() => { recommendationRequest++ })
   .primary-actions { grid-template-columns:minmax(0,1fr) 108px; gap:10px; padding:0; }
   .primary-actions button { min-height:44px; border-radius:6px; font-size:13px; }
   .consult { gap:5px; background:#244e76; box-shadow:none; }
+  .consult-desktop-label { display:none; }
+  .consult-mobile-label { display:inline; }
   .consult image { width:18px; height:18px; }
   .share { border:0; background:#f6f7f8; color:#244e76; }
   .purchase-panel>.information-card { order:2; padding:0 16px 20px; }

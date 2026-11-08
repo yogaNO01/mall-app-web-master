@@ -10,7 +10,7 @@
         <view class="sheet-handle" />
         <view class="sheet-heading"><text>{{ t('选择语言') }}</text><button class="sheet-close" :aria-label="t('关闭语言选择')" @click="languageOpen = false">×</button></view>
         <button class="language-option" :class="{ selected: locale === 'zh' }" :aria-pressed="locale === 'zh'" @click="chooseLanguage('zh')"><view class="option-copy"><text>简体中文</text><text class="option-subtitle">{{ locale === 'zh' ? t('当前语言') : 'Simplified Chinese' }}</text></view><text v-if="locale === 'zh'" class="selected-check">✓</text></button>
-        <button v-for="language in [{code:'en',name:'English'},{code:'pt',name:'Português'}]" :key="language.code" class="language-option" :class="{ selected: locale === language.code }" @click="chooseLanguage(language.code as StorefrontLocale)"><view class="option-copy"><text>{{ language.name }}</text></view><text v-if="locale === language.code" class="selected-check">✓</text></button>
+        <button v-for="language in [{code:'en',name:'English'},{code:'pt',name:'Português'},{code:'es',name:'Español'}]" :key="language.code" class="language-option" :class="{ selected: locale === language.code }" @click="chooseLanguage(language.code as StorefrontLocale)"><view class="option-copy"><text>{{ language.name }}</text></view><text v-if="locale === language.code" class="selected-check">✓</text></button>
       </view>
     </view>
   </view>

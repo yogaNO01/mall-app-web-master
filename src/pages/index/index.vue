@@ -144,14 +144,14 @@
         <button class="editorial-small" @click="openCategories"
           ><view class="weekend-image-slot"
             ><image class="weekend-photo" src="/static/home/20920.png" /></view
-          ><text class="editorial-title">{{ t('周末休闲') }}</text
-          ><text class="editorial-description">{{ t('自在舒适，享受生活的节奏') }}</text></button
+          ><view class="editorial-copy"><text class="editorial-title">{{ t('周末休闲') }}</text
+          ><text class="editorial-description">{{ t('自在舒适，享受生活的节奏') }}</text></view></button
         >
         <button class="editorial-small" @click="openCategories"
           ><view class="accessories-image-slot"
             ><image class="accessories-photo" src="/static/home/8d4b0.png" /></view
-          ><text class="editorial-title">{{ t('配饰灵感') }}</text
-          ><text class="editorial-description">{{ t('点缀细节，彰显独特品味') }}</text></button
+          ><view class="editorial-copy"><text class="editorial-title">{{ t('配饰灵感') }}</text
+          ><text class="editorial-description">{{ t('点缀细节，彰显独特品味') }}</text></view></button
         >
       </view>
     </view>
@@ -547,6 +547,10 @@ button::after {
   font-size: 12px;
   color: $home-blue;
 }
+@media(max-width:1023px) {
+  .brands-section :deep(.heading-more),
+  .editorial-section :deep(.heading-more) { display:none; }
+}
 .mobile-more-button {
   display: flex;
   align-items: center;
@@ -871,6 +875,7 @@ button::after {
   white-space: normal;
   overflow-wrap: break-word;
 }
+.editorial-small .editorial-copy { width:100%; padding-top:0; }
 .editorial-small .editorial-description {
   margin: 5px 8px 12px;
   line-height: 1.5;
@@ -1067,11 +1072,14 @@ button::after {
   .editorial-main, .editorial-small { position: relative; height: clamp(220px, 16.77vw, 322px); margin: 0; border-radius: 12px; }
   .commute-image-slot, .weekend-image-slot, .accessories-image-slot { height: 100%; }
   .commute-photo-slot { height: 100%; }
-  .editorial-copy { position: absolute; bottom: 20px; left: 20px; right: 10px; z-index: 1; }
-  .editorial-small > .editorial-title { position: absolute; left: 20px; bottom: 54px; z-index: 1; }
-  .editorial-small > .editorial-description { position: absolute; left: 20px; bottom: 20px; z-index: 1; }
+  .editorial-copy { position:absolute; bottom:20px; left:20px; right:20px; z-index:2; display:flex; flex-direction:column; gap:4px; width:auto; padding:0; }
+  .editorial-small .editorial-title,.editorial-small .editorial-description { justify-content:flex-start; min-height:0; margin:0; }
+  .editorial-small .editorial-title { line-height:32px; }
+  .editorial-small .editorial-description { line-height:22px; }
   .editorial-title { color: white; text-align: left; font-size: clamp(20px, 1.56vw, 30px); font-weight: 700; line-height: 40px; }
   .editorial-description { color: white; text-align: left; font-size: clamp(12px, 1.04vw, 20px); line-height: 24px; }
+  .editorial-copy .editorial-title { display:block; min-height:0; }
+  .editorial-copy .editorial-description { display:block; min-height:0; margin:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
   .editorial-main::before, .editorial-small::before { content: ''; position: absolute; inset: 50% 0 0; z-index: 1; background: linear-gradient(transparent, #000a); pointer-events: none; }
 }
 .social-grid { gap: 14px; padding-top: 20px; padding-bottom: 20px; }

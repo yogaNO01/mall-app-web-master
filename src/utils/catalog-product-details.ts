@@ -26,7 +26,7 @@ export const readProductSpecs = (skus: { spData: string; stock?:number; lockStoc
     if (!attr) return undefined
     const custom = values.find(item => item.productAttributeId === attr.id)
     const translatedOptions: ContentTranslations = {}
-    for (const lang of ['en','pt'] as const) {
+    for (const lang of ['en','pt','es'] as const) {
     const source = custom?.translations?.[lang]?.value ? custom.value : attr.inputList
     const translated = custom?.translations?.[lang]?.value || attr.translations?.[lang]?.inputList
     const index = (source || '').split(',').indexOf(value)

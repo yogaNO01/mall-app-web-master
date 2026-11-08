@@ -5,7 +5,7 @@
     <view class="category-hero">
       <image class="catalog-mobile-banner" src="/static/category/catalog-banner-mobile.svg" mode="aspectFit" />
       <view class="catalog-desktop-banner">
-        <view v-if="locale === 'pt'" class="category-banner-pt"><view class="category-banner-copy"><text class="category-banner-title">{{ t('探索全品类') }}</text><text class="category-banner-description">{{ t('从日常穿搭到精致配饰，发现属于你的品质好物') }}</text></view></view>
+        <view v-if="locale === 'pt' || locale === 'es'" class="category-banner-pt"><view class="category-banner-copy"><text class="category-banner-title">{{ t('探索全品类') }}</text><text class="category-banner-description">{{ t('从日常穿搭到精致配饰，发现属于你的品质好物') }}</text></view></view>
         <image v-else class="banner-pc" src="/static/category/banner-pc.png" mode="aspectFit" />
       </view>
     </view>
@@ -144,7 +144,7 @@
   .category-page .product-grid :deep(.consult-button) { background:#244e76; border-color:#244e76; }
   .category-page .product-grid :deep(.consult-icon),.category-page .product-grid :deep(.catalog-consult),.category-page .product-grid :deep(.catalog-detail) { display:none; }
   .category-page .product-grid.list-layout :deep(.product-image) { max-height:360px; aspect-ratio:1.2; }
-  .mobile-pagination { display:flex; align-items:center; justify-content:flex-start; flex-wrap:nowrap; gap:8px; max-width:100%; overflow-x:auto; padding:8px 16px calc(28px + env(safe-area-inset-bottom)); scrollbar-width:none; }
+  .mobile-pagination { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px; max-width:100%; padding:8px 16px calc(28px + env(safe-area-inset-bottom)); }
   .mobile-pagination::-webkit-scrollbar { display:none; }
   .category-page .mobile-pagination button { display:flex; flex:0 0 auto; align-items:center; justify-content:center; min-width:36px; height:36px; padding:0 11px; border:0; border-radius:7px; background:#f5f7f9; color:#345572; font-size:12px; font-weight:500; line-height:1; }
   .category-page .mobile-pagination button.active { background:#244e76; color:#fff; }
@@ -181,6 +181,20 @@
     padding:16px 20px calc(16px + env(safe-area-inset-bottom));
     border-top:1px solid #edf1f5;
   }
+  .category-page .filter-actions button {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-width:0;
+    height:44px;
+    margin:0;
+    padding:0 10px;
+    font-size:14px;
+    line-height:1.3;
+    white-space:nowrap;
+  }
+  .category-page .filter-actions button:first-of-type { flex:1; width:auto; }
+  .category-page .filter-actions button:last-of-type { flex:1.6; }
 }
 @media (min-width:600px) and (max-width:1023px) {
   .category-page .product-grid { gap:24px; padding-inline:28px; }
