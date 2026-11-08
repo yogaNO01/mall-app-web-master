@@ -41,13 +41,13 @@
 
     <!-- 商品基本信息 -->
     <view class="introduce-section">
-      <text class="title">{{ t(localized(product, 'name')) }}</text
+      <text class="title">{{ localized(product, 'name') }}</text
       ><br />
-      <text class="title2">{{ t(localized(product, 'subTitle')) }}</text>
+      <text class="title2">{{ localized(product, 'subTitle') }}</text>
+      <text style="display:block;margin-top:8px;font-size:13px;color:#81909d">{{ t('运费') }}: {{ formatFreight() }} / {{ t('件') }}</text>
       <view class="price-box">
-        <text class="price-tip">¥</text>
-        <text class="price">{{ t(product.price) }}</text>
-        <text class="m-price">¥{{ t(product.originalPrice) }}</text>
+        <text class="price">{{ formatProductMoney(product, 'price') }}</text>
+        <text class="m-price">{{ formatProductMoney(product, 'originalPrice') }}</text>
       </view>
       <view class="bot-row">
         <text>{{ t('销量:') }} {{ t(product.sale) }}</text>
@@ -76,7 +76,7 @@
         <text class="tit">{{ t('购买类型') }}</text>
         <view class="con">
           <text class="selected-text" v-for="(sItem, sIndex) in specSelected" :key="sIndex">
-            {{ t(localized(sItem, 'name')) }}
+            {{ localized(sItem, 'name') }}
           </text>
         </view>
         <text class="yticon icon-you"></text>
@@ -144,7 +144,7 @@
           <image :src="brand.logo" class="loaded" mode="aspectFit"></image>
         </view>
         <view class="title">
-          <text>{{ t(localized(brand, 'name')) }}</text>
+          <text>{{ localized(brand, 'name') }}</text>
           <text>{{ t('品牌首字母：') }}{{ t(brand.firstLetter) }}</text>
         </view>
       </view>
@@ -195,18 +195,18 @@
         <view class="a-t">
           <image :src="product.pic"></image>
           <view class="right">
-            <text class="price">¥{{ t(product.price) }}</text>
+            <text class="price">{{ formatProductMoney(product, 'price') }}</text>
             <text class="stock">{{ t('库存：') }}{{ t(product.stock) }}{{ t('件') }}</text>
             <view class="selected">
               {{ t('已选：') }}
               <text class="selected-text" v-for="(sItem, sIndex) in specSelected" :key="sIndex">
-                {{ t(localized(sItem, 'name')) }}
+                {{ localized(sItem, 'name') }}
               </text>
             </view>
           </view>
         </view>
         <view v-for="(item, index) in specList" :key="index" class="attr-list">
-          <text>{{ t(localized(item, 'name')) }}</text>
+          <text>{{ localized(item, 'name') }}</text>
           <view class="item-list">
             <template v-for="(childItem, childIndex) in specChildList" :key="childIndex">
               <text
@@ -215,7 +215,7 @@
                 :class="{ selected: childItem.selected }"
                 @click="handleSelectSpec(childIndex, childItem.pid)"
               >
-                {{ t(localized(childItem, 'name')) }}
+                {{ localized(childItem, 'name') }}
               </text>
             </template>
           </view>
@@ -232,7 +232,7 @@
           <view v-for="item in attrList" class="c-row b-b" :key="item.key">
             <text class="tit">{{ t(item.key) }}</text>
             <view class="con">
-              <text class="con t-r">{{ t(localized(item, 'value')) }}</text>
+              <text class="con t-r">{{ localized(item, 'value') }}</text>
             </view>
           </view>
         </view>
@@ -255,7 +255,7 @@
         >
           <view class="con">
             <view class="left">
-              <text class="title">{{ t(localized(item, 'name')) }}</text>
+              <text class="title">{{ localized(item, 'name') }}</text>
               <text class="time">{{ t('有效期至') }}{{ t(formatDateTime(item.endTime)) }}</text>
             </view>
             <view class="right">
@@ -274,6 +274,7 @@
 
 <script setup lang="ts">
 import { t, localized, locale, setLocale, type ContentTranslations } from '@/i18n'
+import { formatProductMoney, formatFreight } from '@/utils/money'
 
 import H5SiteHeader from '@/components/h5-site-header.vue'
 import PcProductDetail from '@/components/pc-product-detail.vue'
@@ -513,7 +514,7 @@ const initSpecList = (data: any) => {
         type: item.type,
         translations: {
           ...item.translations,
-          pt: { ...item.translations?.pt, inputList: item.handAddStatus === 1 ? productAttributeValueList?.find((value: PmsProductAttributeValue) => value.productAttributeId === item.id)?.translations?.pt?.value || '' : item.translations?.pt?.inputList || '' },
+          ...Object.fromEntries(['en','pt'].map(lang => [lang, { ...item.translations?.[lang], inputList: item.handAddStatus === 1 ? productAttributeValueList?.find((value: PmsProductAttributeValue) => value.productAttributeId === item.id)?.translations?.[lang]?.value || '' : item.translations?.[lang]?.inputList || '' }])),
         },
         handAddStatus: item.handAddStatus,
         inputList: item.handAddStatus === 1 ? productAttributeValueList?.find((value: PmsProductAttributeValue) => value.productAttributeId === item.id)?.value || item.inputList : item.inputList,
@@ -572,7 +573,7 @@ const initAttrList = (data: any) => {
         (v: PmsProductAttributeValue) => v.productAttributeId === item.id,
       )
       const value = filterValueList[0]?.value || ''
-      attrList.value.push({ key: item.name, value, translations: { pt: { key: item.translations?.pt?.name || '', value: filterValueList[0]?.translations?.pt?.value || '' } } })
+      attrList.value.push({ key: item.name, value, translations: Object.fromEntries(['en','pt'].map(lang => [lang, { key: item.translations?.[lang]?.name || '', value: filterValueList[0]?.translations?.[lang]?.value || '' }])) })
     }
   }
 }
@@ -604,7 +605,7 @@ const initPromotionTipList = (data: any) => {
 
 // 初始化商品详情HTML
 const initProductDesc = () => {
-  let rawhtml = product.value.detailMobileHtml || ''
+  let rawhtml = localized(product.value, 'detailMobileHtml') || localized(product.value, 'detailHtml')
 
   // #ifdef H5
   const tempNode = document.createElement('div')
@@ -622,6 +623,8 @@ const initProductDesc = () => {
   desc.value = rawhtml
   // #endif
 }
+
+watch(locale, () => initProductDesc())
 
 // ===== 业务方法 =====
 

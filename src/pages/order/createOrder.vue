@@ -35,7 +35,7 @@
           <text class="spec">{{ formatProductAttr(item.productAttr) }}</text>
           <text class="promotion clamp">{{ item.promotionMessage }}</text>
           <view class="price-box">
-            <text class="price">￥{{ item.price }}</text>
+            <text class="price">{{ formatMoneyAmount(Number(item.price)) }}</text>
             <text class="number">x {{ item.quantity }}</text>
           </view>
         </view>
@@ -68,24 +68,24 @@
     <view class="yt-list">
       <view class="yt-list-cell b-b">
         <text class="cell-tit clamp">商品合计</text>
-        <text class="cell-tip">￥{{ calcAmount.totalAmount }}</text>
+        <text class="cell-tip">{{ formatMoneyAmount(Number(calcAmount.totalAmount)) }}</text>
       </view>
       <view class="yt-list-cell b-b">
         <text class="cell-tit clamp">运费</text>
-        <text class="cell-tip">￥{{ calcAmount.freightAmount }}</text>
+        <text class="cell-tip">{{ formatMoneyAmount(Number(calcAmount.freightAmount)) }}</text>
       </view>
       <view class="yt-list-cell b-b">
         <text class="cell-tit clamp">活动优惠</text>
-        <text class="cell-tip red">-￥{{ calcAmount.promotionAmount }}</text>
+        <text class="cell-tip red">-{{ formatMoneyAmount(Number(calcAmount.promotionAmount)) }}</text>
       </view>
       <view class="yt-list-cell b-b">
         <text class="cell-tit clamp">优惠券</text>
-        <text class="cell-tip red" v-if="currCoupon != null">-￥{{ currCoupon.amount }}</text>
+        <text class="cell-tip red" v-if="currCoupon != null">-{{ formatMoneyAmount(Number(currCoupon.amount)) }}</text>
         <text class="cell-tip red" v-else>-￥0</text>
       </view>
       <view class="yt-list-cell b-b">
         <text class="cell-tit clamp">积分抵扣</text>
-        <text class="cell-tip red">-￥{{ calcIntegrationAmount(useIntegration) }}</text>
+        <text class="cell-tip red">-{{ formatMoneyAmount(Number(calcIntegrationAmount(useIntegration))) }}</text>
       </view>
       <view class="yt-list-cell desc-cell">
         <text class="cell-tit clamp">备注</text>
@@ -145,6 +145,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatMoneyAmount } from '@/utils/money'
 import { ref } from 'vue'
 import { useModalScrollLock } from '@/composables/use-modal-scroll-lock'
 const vModalScrollLock = useModalScrollLock()
@@ -313,7 +314,7 @@ const getDefaultAddress = () => {
 // 计算支付金额
 const calcPayAmount = () => {
   calcAmount.value.payAmount =
-    calcAmount.value.totalAmount - calcAmount.value.promotionAmount - calcAmount.value.freightAmount
+    Number(calcAmount.value.totalAmount) - Number(calcAmount.value.promotionAmount) + Number(calcAmount.value.freightAmount)
   if (currCoupon.value != null) {
     calcAmount.value.payAmount = calcAmount.value.payAmount - currCoupon.value.amount
   }

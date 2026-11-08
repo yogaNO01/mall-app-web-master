@@ -2,7 +2,7 @@
   <view class="brand-page">
     <h5-site-header />
     <view class="brand-body">
-      <view class="breadcrumbs"><button @click="goHome">{{ t('首页') }}</button><text>›</text><button @click="goProducts">{{ t('全部商品') }}</button><text>›</text><text>{{ t(localized(brand, 'name') || '品牌详情') }}</text></view>
+      <view class="breadcrumbs"><button @click="goHome">{{ t('首页') }}</button><text>›</text><button @click="goProducts">{{ t('全部商品') }}</button><text>›</text><text>{{ (localized(brand, 'name') || t('品牌详情')) }}</text></view>
       <view v-if="brandLoading" class="brand-skeleton" :aria-label="t('品牌加载中')" />
       <view v-else-if="brandError" class="empty-state">
         <text>{{ t('品牌信息加载失败') }}</text><button v-if="queryParam.brandId" @click="loadBrandDetail(queryParam.brandId)">{{ t('重新加载') }}</button>
@@ -14,12 +14,12 @@
         </view>
         <view class="brand-overview" :class="{ 'with-cover': !!brand.bigPic }">
           <view v-if="brand.logo" class="brand-logo"><image :src="brand.logo" mode="aspectFit" /></view>
-          <view class="brand-identity"><text class="brand-eyebrow">{{ t('品牌专区') }}</text><text class="brand-name">{{ t(localized(brand, 'name')) }}</text><text v-if="brand.brandDesc" class="brand-description">{{ t(localized(brand, 'brandDesc')) }}</text></view>
+          <view class="brand-identity"><text class="brand-eyebrow">{{ t('品牌专区') }}</text><text class="brand-name">{{ localized(brand, 'name') }}</text><text v-if="brand.brandDesc" class="brand-description">{{ localized(brand, 'brandDesc') }}</text></view>
           <button v-if="memberEntriesEnabled" class="favorite-button" :class="{ active: favoriteStatus }" :disabled="favoriteBusy" :aria-pressed="favoriteStatus" @click="handleToggleFavorite"><text>{{ t(favoriteStatus ? '♥' : '♡') }}</text>{{ t(favoriteStatus ? '已关注品牌' : '关注品牌') }}</button>
         </view>
         <view v-if="brand.brandStory" class="brand-story">
           <text class="section-title">{{ t('品牌故事') }}</text>
-          <text class="story-content">{{ t(localized(brand, 'brandStory')) }}</text>
+          <text class="story-content">{{ localized(brand, 'brandStory') }}</text>
         </view>
       </template>
       <view class="brand-products">
@@ -29,6 +29,7 @@
         <view v-else class="brand-product-grid">
           <home-product-card v-for="item in productList" :key="item.id" :product="item" color-asset="" :show-color-preview="false" variant="catalog" @detail="handleNavToDetail" />
         </view>
+        <button class="mobile-brand-more" @click="goProducts">{{ t('全部商品') }} ›</button>
         <view class="load-state" aria-live="polite">
           <template v-if="productsError"><text>{{ t('商品加载失败，请稍后重试') }}</text><button @click="loadData(productList.length ? 'add' : 'refresh')">{{ t('重新加载') }}</button></template>
           <text v-else-if="loadingType === 'loading' && productList.length">{{ t('正在加载更多商品…') }}</text>
@@ -244,7 +245,7 @@ button:focus-visible { outline:2px solid #7199c4; outline-offset:4px; }
 .products-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:10px 0 18px; }
 .products-heading>view { display:flex; flex-wrap:wrap; align-items:baseline; gap:10px; }
 .product-count { color:$home-muted; font-size:11px; }
-.products-heading>button { flex:none; color:$home-blue; font-size:12px; }
+.products-heading>button { display:none; flex:none; color:$home-blue; font-size:12px; }
 .brand-product-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px 12px; }
 .brand-product-grid :deep(.product-card.catalog) { border-radius:8px; border-color:#e9edf2; }
 .brand-product-grid :deep(.product-image) { width:calc(100% - 20px); margin:10px 10px 0; aspect-ratio:1; }
@@ -255,12 +256,14 @@ button:focus-visible { outline:2px solid #7199c4; outline-offset:4px; }
 .empty-state { display:flex; flex-direction:column; align-items:center; gap:18px; padding:48px 20px; border-radius:10px; background:#f7f9fc; color:$home-muted; font-size:14px; }
 .empty-state button,.load-state button { padding:10px 22px; border:1px solid #d5dfeb; border-radius:7px; background:#fff; color:$home-blue; font-size:13px; }
 .load-state { display:flex; flex-direction:column; align-items:center; gap:12px; padding:28px 0 8px; color:$home-muted; font-size:12px; }
+.mobile-brand-more { display:flex; align-items:center; justify-content:center; width:100%; height:40px; margin-top:18px; border:1px solid $home-line; border-radius:6px; background:#fff; color:$home-navy; font-size:13px; line-height:1.4; }
 .product-skeleton,.brand-skeleton { border-radius:10px; background:linear-gradient(100deg,#f1f4f7 30%,#fafbfd 50%,#f1f4f7 70%); background-size:200% 100%; animation:brand-loading 1.5s ease-in-out infinite; }
 .product-skeleton { aspect-ratio:1 / 1.5; }
 .brand-skeleton { height:240px; margin-bottom:24px; }
 @keyframes brand-loading { from { background-position:100% 0; } to { background-position:-100% 0; } }
 @media(min-width:600px) and (max-width:1023px) { .brand-body { padding-inline:28px; } .brand-product-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
 @media(min-width:1024px) {
+  .mobile-brand-more { display:none; }
   .brand-body { padding:0 3.5% 64px; }
   .breadcrumbs { padding:26px 0; gap:12px; font-size:14px; }
   .brand-cover { height:clamp(260px,24vw,350px); border-radius:14px; }
@@ -276,6 +279,7 @@ button:focus-visible { outline:2px solid #7199c4; outline-offset:4px; }
   .section-title { font-size:24px; }
   .story-content { margin-top:16px; font-size:15px; line-height:2; }
   .products-heading { margin-bottom:24px; }
+  .products-heading>button { display:block; }
   .products-heading>view { gap:16px; }
   .product-count,.products-heading>button { font-size:14px; }
   .brand-product-grid { grid-template-columns:repeat(4,minmax(0,1fr)); gap:24px 20px; }

@@ -2,7 +2,7 @@
   <view class="pc-product-detail">
     <view class="breadcrumbs">
       <button @click="goHome">{{ t('首页') }}</button><text>›</text>
-      <button @click="goCategory">{{ t(localized(product, 'productCategoryName') || '全部商品') }}</button>
+      <button @click="goCategory">{{ (localized(product, 'productCategoryName') || t('全部商品')) }}</button>
     </view>
 
     <view class="detail-layout">
@@ -69,9 +69,9 @@
             <detail-collapse :open="openSections.details">
               <view class="info-box attributes">
               <view v-if="product.productSn"><text>{{ t('款号') }}</text><text>{{ t(product.productSn) }}</text></view>
-              <view v-if="product.brandName"><text>{{ t('品牌') }}</text><text>{{ t(localized(product, 'brandName')) }}</text></view>
-              <view v-if="product.productCategoryName"><text>{{ t('分类') }}</text><text>{{ t(localized(product, 'productCategoryName')) }}</text></view>
-              <view v-for="item in generalAttributes" :key="item.key"><text>{{ localized(item, 'key') }}</text><text>{{ t(localized(item, 'value')) }}</text></view>
+              <view v-if="product.brandName"><text>{{ t('品牌') }}</text><text>{{ localized(product, 'brandName') }}</text></view>
+              <view v-if="product.productCategoryName"><text>{{ t('分类') }}</text><text>{{ localized(product, 'productCategoryName') }}</text></view>
+              <view v-for="item in generalAttributes" :key="item.key"><text>{{ localized(item, 'key') }}</text><text>{{ localized(item, 'value') }}</text></view>
             </view>
             </detail-collapse>
           </view>
@@ -80,7 +80,7 @@
               <text>{{ t('商品描述') }}</text><view class="toggle-label"><text>{{ t(openSections.description ? '收起' : '展开') }}</text><image class="toggle-chevron" :class="{ expanded: openSections.description }" src="/static/home/detail-arrow.svg" mode="aspectFit" aria-hidden="true" /></view>
             </button>
             <detail-collapse :open="openSections.description">
-              <view class="info-box description-text">{{ t(localized(product, 'description') || localized(product, 'subTitle')) }}</view>
+              <view class="info-box description-text">{{ (localized(product, 'description') || localized(product, 'subTitle')) }}</view>
             </detail-collapse>
           </view>
           <view v-if="product.detailMobileHtml" class="info-section">
@@ -88,7 +88,7 @@
               <text>{{ t('图文详情') }}</text><view class="toggle-label"><text>{{ t(openSections.content ? '收起' : '展开') }}</text><image class="toggle-chevron" :class="{ expanded: openSections.content }" src="/static/home/detail-arrow.svg" mode="aspectFit" aria-hidden="true" /></view>
             </button>
             <detail-collapse :open="openSections.content">
-              <view class="rich-detail"><rich-text :nodes="t(localized(product, 'detailMobileHtml'))" /></view>
+              <view class="rich-detail"><rich-text :nodes="localized(product, 'detailMobileHtml')" /></view>
             </detail-collapse>
           </view>
         </view>
@@ -97,7 +97,7 @@
       <aside class="purchase-panel">
         <view class="purchase-card">
           <view class="title-row">
-            <text class="product-title">{{ t(localized(product, 'name') || '商品详情') }}</text>
+            <text class="product-title">{{ (localized(product, 'name') || t('商品详情')) }}</text>
             <text v-if="product.newStatus === 1" class="new-badge">{{ t('新品') }}</text>
           </view>
           <view class="sku-line">
@@ -106,10 +106,11 @@
             <button v-if="product.productSn" class="sku-copy" :aria-label="t('复制货号')" @click="copyProductSn">{{ t('复制') }}</button>
           </view>
           <view class="price-row"><text class="price">{{ formatProductMoney(product, 'price') }}</text><text v-if="hasProductOriginalPrice(product)" class="old-price">{{ formatProductMoney(product, 'originalPrice') }}</text></view>
-          <text v-if="product.subTitle || product.description" class="subtitle">{{ t(localized(product, 'subTitle') || localized(product, 'description')) }}</text>
+          <text class="freight-summary">{{ t('运费') }}: {{ formatFreight(quantity) }}</text>
+          <text v-if="product.subTitle || product.description" class="subtitle">{{ (localized(product, 'subTitle') || localized(product, 'description')) }}</text>
 
           <view v-for="spec in specList" :key="spec.id" class="spec-block">
-            <view class="spec-label"><text class="required">*</text>{{ t(localized(spec, 'name')) }}：<b>{{ displayOption(spec, selectedValue(spec.id)) }}</b></view>
+            <view class="spec-label"><text class="required">*</text>{{ localized(spec, 'name') }}：<b>{{ displayOption(spec, selectedValue(spec.id)) }}</b></view>
             <view class="spec-options">
               <button
                 v-for="option in optionsFor(spec.id)"
@@ -137,7 +138,7 @@
             </button>
             <detail-collapse :open="openSections.material">
               <view class="info-box attributes">
-              <view v-for="item in materialAttributes" :key="item.key"><text>{{ localized(item, 'key') }}</text><text>{{ t(localized(item, 'value')) }}</text></view>
+              <view v-for="item in materialAttributes" :key="item.key"><text>{{ localized(item, 'key') }}</text><text>{{ localized(item, 'value') }}</text></view>
             </view>
             </detail-collapse>
           </view>
@@ -159,7 +160,7 @@ import { isColorSpec, parseProductColor } from '@/utils/product-colors'
 import type { PmsProduct, PmsProductAttribute, PmsSkuStock, SpecOption } from '@/types/product'
 import { availableSkuStock, findSelectedSku, isSkuOptionAvailable } from '@/utils/sku-selection'
 import { copyText } from '@/utils/clipboard'
-import { formatProductMoney, hasProductOriginalPrice } from '@/utils/money'
+import { formatProductMoney, hasProductOriginalPrice, formatFreight } from '@/utils/money'
 import { useProductSearch } from '@/composables/use-product-search'
 const { searchProducts } = useProductSearch()
 
@@ -484,4 +485,9 @@ onBeforeUnmount(() => { recommendationRequest++ })
 @media (prefers-reduced-motion:reduce) {
   .pc-product-detail button,.toggle-chevron { transition:none; }
 }
+</style>
+<style scoped>
+.price-row .price { white-space:pre-line; font-size:24px; line-height:1.5; }
+.freight-summary { display:block; margin-top:8px; color:#81909d; font-size:13px; line-height:1.5; }
+.price-row .old-price { white-space:pre-line; line-height:1.5; }
 </style>

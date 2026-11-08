@@ -1,7 +1,7 @@
 import type { PmsProduct } from '@/types/product'
 import type { ProductColor } from '@/utils/product-colors'
 import type { ContentTranslations } from '@/i18n'
-import { productAmount } from '@/utils/money'
+import { marketProductAmount as productAmount } from '@/utils/money'
 
 export type CatalogEntry = { product: PmsProduct; colors: ProductColor[]; sizes: string[]; quality: string; variants?: {color?:string;size?:string;stock:number}[]; sizeTranslations?: Record<string, ContentTranslations> }
 export type CatalogFilters = { brands: string[]; colors: string[]; sizes: string[]; min: string; max: string; quality: string; keyword: string; sort: number; discount: boolean }

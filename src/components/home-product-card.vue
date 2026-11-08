@@ -10,15 +10,23 @@
     />
     <view class="product-info">
       <button v-if="variant === 'catalog'" class="catalog-detail" :aria-label="t('查看商品详情')" @click="$emit('detail', product)">›</button>
-      <text class="brand clamp">{{ t(localized(product, 'brandName') || '精选商品') }}</text>
-      <text class="product-name clamp" role="link" tabindex="0" @keydown.enter="$emit('detail', product)" @click="$emit('detail', product)">{{ t(localized(product, 'name')) }}</text>
+      <text class="brand clamp">{{ (localized(product, 'brandName') || t('精选商品')) }}</text>
+      <text class="product-name clamp" role="link" tabindex="0" @keydown.enter="$emit('detail', product)" @click="$emit('detail', product)">{{ localized(product, 'name') }}</text>
+      <view v-if="showColorPreview && productColors.length" class="card-meta-row">
+        <view v-if="showColorPreview && productColors.length" class="product-colors" :aria-label="t('可选颜色')"><text v-for="color in productColors" :key="color.value" class="product-color-dot" :style="{ backgroundColor: color.color }" :title="localized(color, 'name')" /></view>
+      </view>
+      <view class="card-pricing-row">
+        <card-region-picker :model-value="cardRegion" @update:model-value="previewRegion=$event" />
+      <view class="card-price-values">
       <view class="prices">
-        <text class="price">{{ formatProductMoney(product, 'price') }}</text>
-        <text v-if="hasProductOriginalPrice(product)" class="original-price"
-          >{{ formatProductMoney(product, 'originalPrice') }}</text
+        <text class="price">{{ cardPrice('price') }}</text>
+        <text v-if="hasProductOriginalPrice(product, cardRegion)" class="original-price"
+          >{{ cardPrice('originalPrice') }}</text
         >
       </view>
-      <view v-if="showColorPreview && productColors.length" class="product-colors" :aria-label="t('可选颜色')"><text v-for="color in productColors" :key="color.value" class="product-color-dot" :style="{ backgroundColor: color.color }" :title="t(localized(color, 'name'))" /></view>
+      </view>
+      </view>
+      <text class="freight" aria-live="polite">{{ t('运费') }} {{ cardFreight }}</text>
       <view class="product-actions">
         <button class="detail-button" @click="$emit('detail', product)"><image class="desktop-action-icon detail-icon" src="/static/home/desktop/d7d3f.svg" />{{ t('查看详情') }}</button>
         <button class="consult-button" @click="consultOnWhatsApp(product)"><image class="consult-icon" src="/static/home/whatsapp-white.svg" mode="aspectFit" />{{ t('咨询购买') }}</button>
@@ -32,8 +40,9 @@ import { t, localized, locale } from '@/i18n'
 
 import type { PmsProduct } from '@/types/product'
 import { consultOnWhatsApp } from '@/utils/whatsapp'
-import { formatProductMoney, hasProductOriginalPrice } from '@/utils/money'
-import { ref, watch } from 'vue'
+import { formatProductMoney, hasProductOriginalPrice, formatFreight, market, type PriceRegion, type ProductMoneyField } from '@/utils/money'
+import CardRegionPicker from './card-region-picker.vue'
+import { ref, watch, computed } from 'vue'
 import { getCatalogProductDetail, readProductSpecs } from '@/utils/catalog-product-details'
 import type { ProductColor } from '@/utils/product-colors'
 const props = withDefaults(defineProps<{ product: PmsProduct; colorAsset: string; variant?: 'default' | 'catalog'; showColorPreview?: boolean; hideMobileConsultIcon?: boolean }>(), {
@@ -42,6 +51,12 @@ const props = withDefaults(defineProps<{ product: PmsProduct; colorAsset: string
   hideMobileConsultIcon: false,
 })
 const productColors = ref<ProductColor[]>([])
+const previewRegion=ref<PriceRegion>()
+const cardRegion=computed(()=>previewRegion.value || market.value)
+const compactCurrency=(value:string)=>value.replace(/^(CNY|USD|EUR)\s/,'')
+const cardPrice=(field:ProductMoneyField)=>compactCurrency(formatProductMoney(props.product,field,cardRegion.value))
+const cardFreight=computed(()=>compactCurrency(formatFreight(1,cardRegion.value)))
+watch(()=>props.product.id,()=>{previewRegion.value=undefined})
 const imageFailed = ref(false)
 watch(() => props.product.pic, () => { imageFailed.value = false })
 watch(() => [props.product.id, props.showColorPreview] as const, async ([id, show], _, onCleanup) => {
@@ -267,4 +282,30 @@ defineEmits<{
     overflow-wrap:anywhere;
   }
 }
+</style>
+<style scoped>
+.product-card .prices { align-items:baseline; flex-wrap:wrap; gap:6px; min-height:0; }
+.product-card .freight { display:block; margin-top:-2px; color:#8a98a7; font-size:11px; line-height:1.5; letter-spacing:.01em; }
+.product-card .card-meta-row { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:2px 8px; margin:0 0 2px; min-height:20px; }
+.product-card .product-colors { flex:1; min-width:30px; margin:0; }
+.product-card .card-pricing-row { display:flex; align-items:center; gap:9px; min-height:30px; }
+.product-card .card-price-values { flex:1; min-width:0; }
+.product-card .card-price-values .freight { margin-top:2px; }
+.product-card .card-meta-row:empty { display:none; }
+.product-card .card-region-select { position:relative; flex:none; width:52px; height:28px; margin:0; color:#52667b; border:0; border-radius:5px; background:#f1f4f7; transition:background .15s; }
+.product-card .card-region-select:hover { background:#e6edf4; }
+.product-card .region-code { display:block; padding:0 18px 0 7px; font-size:11px; font-weight:500; line-height:28px; }
+.product-card .card-region-select select { position:absolute; inset:0; z-index:1; display:block; box-sizing:border-box; width:100%; height:100%; opacity:0; cursor:pointer; }
+.product-card .card-region-select:focus-within { outline:2px solid #244e76; outline-offset:1px; }
+.product-card .card-region-select select:hover { border-color:#c7d4e3; background:#eef3f8; }
+.product-card .card-region-select select:focus-visible { outline:2px solid #244e76; outline-offset:1px; }
+.product-card .region-chevron { position:absolute; right:4px; top:8px; width:12px; height:12px; pointer-events:none; }
+@media(max-width:767px) {
+  .product-card .card-meta-row { gap:4px; }
+  .product-card .card-region-select select { font-size:16px; }
+  .product-card .card-pricing-row { gap:7px; }
+}
+.product-card .prices .price { display:block; white-space:nowrap; font-size:19px; line-height:28px; letter-spacing:-.02em; }
+.product-card .prices .original-price { display:block; white-space:nowrap; font-size:11px; line-height:18px; color:#99a4af; }
+@media(max-width:767px) { .product-card .prices .price { font-size:17px; } }
 </style>

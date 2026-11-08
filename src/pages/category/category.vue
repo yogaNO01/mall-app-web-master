@@ -2,7 +2,13 @@
   <view class="category-page">
     <h5-site-header />
     <view class="search-area"><storefront-search v-model="searchDraft" submit-on-clear @search="submitSearch" /></view>
-    <view class="category-hero"><view v-if="locale === 'pt'" class="category-banner-pt"><view class="category-banner-copy"><text class="category-banner-title">{{ t('探索全品类') }}</text><text class="category-banner-description">{{ t('从日常穿搭到精致配饰，发现属于你的品质好物') }}</text></view></view><template v-else><image class="banner-mobile" src="/static/category/banner-mobile.svg" mode="aspectFit" /><image class="banner-pc" src="/static/category/banner-pc.png" mode="aspectFit" /></template></view>
+    <view class="category-hero">
+      <image class="catalog-mobile-banner" src="/static/category/catalog-banner-mobile.svg" mode="aspectFit" />
+      <view class="catalog-desktop-banner">
+        <view v-if="locale === 'pt'" class="category-banner-pt"><view class="category-banner-copy"><text class="category-banner-title">{{ t('探索全品类') }}</text><text class="category-banner-description">{{ t('从日常穿搭到精致配饰，发现属于你的品质好物') }}</text></view></view>
+        <image v-else class="banner-pc" src="/static/category/banner-pc.png" mode="aspectFit" />
+      </view>
+    </view>
     <view class="catalog-layout">
     <view class="pc-filter-sidebar">
       <view class="sidebar-heading"><text>{{ t('筛选商品') }}</text><button @click="resetFilters">{{ t('清除全部') }}</button></view>
@@ -10,14 +16,14 @@
       <checkbox-group @change="handleBrandChange"><label v-for="brand in filterBrands" :key="brand" class="sidebar-brand"><checkbox :value="brand" :checked="selectedBrands.includes(brand)"/>{{ t(brand) }}</label></checkbox-group>
       <text class="sidebar-title">{{ t('价格区间') }}</text><view class="price-inputs"><input v-model="minPrice" :placeholder="pricePlaceholder('20')" type="number"/><input v-model="maxPrice" :placeholder="pricePlaceholder('5,000')" type="number"/></view>
       <text v-if="priceRangeError" class="filter-error">{{ t(priceRangeError) }}</text>
-      <text class="sidebar-title">{{ t('颜色') }}</text><view class="filter-colors"><button v-for="color in availableColors" :key="color.color" :class="{ selected: selectedColors.includes(color.color) }" :style="{ backgroundColor: color.color }" :title="t(`${localized(color, 'name')} ${color.color}`)" :aria-label="t(localized(color, 'name'))" :aria-pressed="selectedColors.includes(color.color)" @click="toggleColor(color.color)" /></view>
+      <text class="sidebar-title">{{ t('颜色') }}</text><view class="filter-colors"><button v-for="color in availableColors" :key="color.color" :class="{ selected: selectedColors.includes(color.color) }" :style="{ backgroundColor: color.color }" :title="t(`${localized(color, 'name')} ${color.color}`)" :aria-label="localized(color, 'name')" :aria-pressed="selectedColors.includes(color.color)" @click="toggleColor(color.color)" /></view>
       <text class="sidebar-title">{{ t('品质等级') }}</text><view class="quality-list"><button v-for="item in ['高级','中级','基础级']" :key="item" :class="{active:quality===item}" @click="quality=item">{{ t(item) }}</button></view>
       <text class="sidebar-title">{{ t('尺码/规格') }}</text><view class="filter-sizes"><text v-if="!selectedCategory">{{ t('请先选择分类') }}</text><button v-for="size in availableSizes" :key="size" :class="{ selected: selectedSizes.includes(size) }" @click="toggleSize(size)">{{ sizeLabel(size) }}</button></view>
     </view>
     <view class="catalog-main">
-    <view class="category-nav"><button :class="{ active: !selectedCategory }" @click="selectCategory()">{{ t('全部') }}</button><button v-for="item in categoryList" :key="item.id" :class="{ active: selectedCategory === item.id }" @click="selectCategory(item.id)">{{ t(localized(item, 'name')) }}</button></view>
-    <view class="sort-area"><view class="sort-tabs"><button :class="{ active: sort === 0 }" @click="changeSort(0)">{{ t('排序：综合推荐') }}</button><button :class="{ active: sort === 3 || sort === 4, 'price-asc': sort === 3, 'price-desc': sort === 4 }" @click="togglePrice">{{ t('价格') }} <text class="price-direction">{{ t(sort === 3 ? '↑' : sort === 4 ? '↓' : '↕') }}</text></button><button :class="{ active: sort === 2 }" @click="changeSort(2)">{{ t('销量') }}</button><button :class="{ active: sort === 1 }" @click="changeSort(1)">{{ t('新品') }}</button><button @click="discountOnly = !discountOnly" :class="{ active: discountOnly }">{{ t('折扣') }}</button><button class="selected-effects" @click="filterOpen = true">{{ t('已选效果') }}</button><button class="filter-button" @click="filterOpen = true">{{ t('更多筛选 ☷') }}</button></view><view class="mobile-sort-tabs"><button :class="{ active: sort === 0 }" @click="changeSort(0)">{{ t('综合推荐') }}</button><button :class="{ active: sort === 3 || sort === 4 }" @click="togglePrice">{{ t('价格') }} {{ t(sort === 3 ? '↑' : sort === 4 ? '↓' : '↕') }}</button><button :class="{ active: sort === 1 }" @click="changeSort(1)">{{ t('新品') }}</button><button class="mobile-filter-button" @click="filterOpen = true">{{ t('更多筛选') }}</button></view><view class="result-line"><text>{{ t('共{count}件商品', { count: total }) }}</text><view class="mobile-layout-options"><button :aria-pressed="!listLayout" :aria-label="t('双列展示')" @click="listLayout = false">▦</button><button :aria-pressed="listLayout" :aria-label="t('单列展示')" @click="listLayout = true">☷</button></view></view></view>
-    <view class="pc-catalog-tools"><storefront-search v-model="searchDraft" class="catalog-search-field" compact submit-on-clear @search="submitSearch" /><view class="layout-options"><button :aria-pressed="!listLayout" :aria-label="t('网格布局')" @click="listLayout = false"><image :src="listLayout ? '/static/category/layout-grid.png' : '/static/category/layout-grid-active.png'" mode="aspectFit"/></button><button :aria-pressed="listLayout" :aria-label="t('列表布局')" @click="listLayout = true"><image :src="listLayout ? '/static/category/layout-list-active.png' : '/static/category/layout-list.png'" mode="aspectFit"/></button></view><text>{{ t('点击切换商品布局') }}</text></view>
+    <view class="category-nav"><button :class="{ active: !selectedCategory }" @click="selectCategory()">{{ t('全部') }}</button><button v-for="item in categoryList" :key="item.id" :class="{ active: selectedCategory === item.id }" @click="selectCategory(item.id)">{{ localized(item, 'name') }}</button></view>
+    <view class="sort-area"><view class="sort-layout-tools"><view class="layout-options"><button :aria-pressed="!listLayout" :aria-label="t('网格布局')" @click="listLayout = false"><image :src="listLayout ? '/static/category/layout-grid.png' : '/static/category/layout-grid-active.png'" mode="aspectFit"/></button><button :aria-pressed="listLayout" :aria-label="t('列表布局')" @click="listLayout = true"><image :src="listLayout ? '/static/category/layout-list-active.png' : '/static/category/layout-list.png'" mode="aspectFit"/></button></view><text>{{ t('点击切换商品布局') }}</text></view><view class="sort-tabs"><button :class="{ active: sort === 0 }" @click="changeSort(0)">{{ t('排序：综合推荐') }}</button><button :class="{ active: sort === 3 || sort === 4, 'price-asc': sort === 3, 'price-desc': sort === 4 }" @click="togglePrice">{{ t('价格') }} <text class="price-direction">{{ t(sort === 3 ? '↑' : sort === 4 ? '↓' : '↕') }}</text></button><button :class="{ active: sort === 2 }" @click="changeSort(2)">{{ t('销量') }}</button><button :class="{ active: sort === 1 }" @click="changeSort(1)">{{ t('新品') }}</button><button @click="discountOnly = !discountOnly" :class="{ active: discountOnly }">{{ t('折扣') }}</button><button class="selected-effects" @click="filterOpen = true">{{ t('已选效果') }}</button><button class="filter-button" @click="filterOpen = true">{{ t('更多筛选 ☷') }}</button></view><view class="mobile-sort-tabs"><button :class="{ active: sort === 0 }" @click="changeSort(0)">{{ t('综合推荐') }}</button><button :class="{ active: sort === 3 || sort === 4 }" @click="togglePrice">{{ t('价格') }} {{ t(sort === 3 ? '↑' : sort === 4 ? '↓' : '↕') }}</button><button :class="{ active: sort === 1 }" @click="changeSort(1)">{{ t('新品') }}</button><button class="mobile-filter-button" @click="filterOpen = true">{{ t('更多筛选') }}</button></view><view class="result-line"><text>{{ t('共{count}件商品', { count: total }) }}</text><view class="mobile-layout-options"><button :aria-pressed="!listLayout" :aria-label="t('双列展示')" @click="listLayout = false">▦</button><button :aria-pressed="listLayout" :aria-label="t('单列展示')" @click="listLayout = true">☷</button></view></view></view>
+    <view class="pc-catalog-tools"><storefront-search v-model="searchDraft" class="catalog-search-field" compact submit-on-clear @search="submitSearch" /></view>
     <view v-if="keyword" class="search-summary"><text>{{ t('“{keyword}”的搜索结果', { keyword }) }}</text><button @click="clearSearch">{{ t('清空搜索') }}</button></view>
     <view v-if="activeFilterChips.length" class="active-filters"><button v-for="chip in activeFilterChips" :key="chip.id" @click="removeFilterChip(chip)">{{ t(chip.label) }} <text>×</text></button><button class="clear-all-filters" @click="resetFilters">{{ t('清空筛选') }}</button></view>
     <view v-if="!productsLoading && !productsError" class="product-grid" :class="{ 'list-layout': listLayout }"><home-product-card v-for="item in productList" :key="item.id" :product="item" color-asset="/static/home/126cc.svg" variant="catalog" hide-mobile-consult-icon @detail="openDetail" @consult="openContact" /></view>
@@ -25,7 +31,7 @@
     <view v-if="productsLoading" class="empty-state" role="status" aria-live="polite">{{ t('正在查找商品…') }}</view><view v-else-if="productsError" class="empty-state"><text>{{ t('商品加载失败') }}</text><button @click="loadProducts(currentPage)">{{ t('重新加载') }}</button></view><view v-else-if="!productList.length" class="empty-state"><text>{{ t(keyword ? `没有找到“${keyword}”相关商品` : '暂无匹配商品') }}</text><text class="empty-hint">{{ t('试试其他商品名称、品牌或货号，或调整筛选条件') }}</text><view class="empty-actions"><button v-if="keyword" @click="clearSearch">{{ t('清空搜索') }}</button><button @click="resetFilters">{{ t('重置筛选') }}</button></view></view>
     </view>
     </view>
-    <view v-if="contactOpen" v-modal-scroll-lock class="overlay contact-overlay" @click="contactOpen = false"><view class="contact-panel" @click.stop><text>{{ t('咨询购买') }}</text><text>{{ t(localized(consultedProduct, 'name')) }}</text><button @click="contactOpen = false">{{ t('关闭') }}</button></view></view>
+    <view v-if="contactOpen" v-modal-scroll-lock class="overlay contact-overlay" @click="contactOpen = false"><view class="contact-panel" @click.stop><text>{{ t('咨询购买') }}</text><text>{{ localized(consultedProduct, 'name') }}</text><button @click="contactOpen = false">{{ t('关闭') }}</button></view></view>
     <view v-if="filterOpen" v-modal-scroll-lock class="filter-overlay" @click="filterOpen = false">
       <view class="filter-drawer" role="dialog" aria-modal="true" :aria-label="t('筛选商品')" @click.stop>
         <view class="filter-heading">
@@ -42,7 +48,7 @@
           </view>
           <view class="filter-section">
             <text class="filter-title">{{ t('颜色') }}<text class="filter-section-hint">{{ t('可多选') }}</text></text>
-            <view class="filter-colors"><button v-for="color in availableColors" :key="color.color" :class="{ selected: selectedColors.includes(color.color) }" :style="{ backgroundColor: color.color }" :title="t(`${localized(color, 'name')} ${color.color}`)" :aria-label="t(localized(color, 'name'))" :aria-pressed="selectedColors.includes(color.color)" @click="toggleColor(color.color)" /></view>
+            <view class="filter-colors"><button v-for="color in availableColors" :key="color.color" :class="{ selected: selectedColors.includes(color.color) }" :style="{ backgroundColor: color.color }" :title="t(`${localized(color, 'name')} ${color.color}`)" :aria-label="localized(color, 'name')" :aria-pressed="selectedColors.includes(color.color)" @click="toggleColor(color.color)" /></view>
           </view>
           <view class="filter-section">
             <text class="filter-title">{{ t('尺码/规格') }}</text>
@@ -205,7 +211,7 @@ import { getCategoryTreeAPI, searchProductListAPI } from '@/apis/product'
 import { clearCatalogProductCache, getCatalogProductDetail, readProductSpecs } from '@/utils/catalog-product-details'
 import { filterCatalog, validatePriceRange, type CatalogEntry } from '@/utils/filter-catalog'
 import type { ProductColor } from '@/utils/product-colors'
-import { currencySymbol } from '@/utils/money'
+import { currencySymbol, market, activeExchangeRates } from '@/utils/money'
 import HomeProductCard from '@/components/home-product-card.vue'
 import H5SiteHeader from '@/components/h5-site-header.vue'
 import type { CategoryTreeNode, PmsProduct } from '@/types/product'
@@ -337,7 +343,8 @@ const openDetail = (product: PmsProduct) => uni.navigateTo({ url: `/pages/produc
 const openContact = (product: PmsProduct) => { consultedProduct.value = product; contactOpen.value = true }
 
 watch([selectedBrands, selectedColors, selectedSizes, minPrice, maxPrice, quality, discountOnly], () => { void loadProducts() })
-watch(locale, () => { minPrice.value = ''; maxPrice.value = ''; void loadProducts(currentPage.value) })
+watch([market,activeExchangeRates], () => { void loadProducts() })
+watch(locale, () => { minPrice.value = ''; maxPrice.value = ''; void refreshCategories(); void loadProducts(currentPage.value) })
 
 let appliedQueryKey = ''
 watch(() => [route.path,route.query.keyword, route.query.categoryId], ([path,query, category]) => {
@@ -353,12 +360,17 @@ watch(() => [route.path,route.query.keyword, route.query.categoryId], ([path,que
   resetFilters()
   void loadProducts()
 }, { immediate: true })
-onShow(() => { if (catalogLoadedAt && Date.now()-catalogLoadedAt >= 60000 && !productsLoading.value) void loadProducts(currentPage.value) })
+onShow(() => { void refreshCategories(); if (catalogLoadedAt && Date.now()-catalogLoadedAt >= 60000 && !productsLoading.value) void loadProducts(currentPage.value) })
 onPullDownRefresh(async () => {
   loadedKey = null; catalogLoadedAt = 0; facetRequest++; catalogPending = undefined; clearCatalogProductCache()
   try { await loadProducts(1) } finally { uni.stopPullDownRefresh() }
 })
-onLoad(async () => { const response = await getCategoryTreeAPI(); categoryList.value = (response.data || []).sort((a,b) => (b.sort || 0)-(a.sort || 0)) })
+let categoryRequest:Promise<void>|undefined
+function refreshCategories():Promise<void> {
+  if(categoryRequest)return categoryRequest
+  categoryRequest=getCategoryTreeAPI().then(response=>{categoryList.value=(response.data||[]).sort((a,b)=>(b.sort||0)-(a.sort||0))}).catch(error=>console.error('Category refresh failed',error)).finally(()=>{categoryRequest=undefined})
+  return categoryRequest
+}
 </script>
 
 <style lang="scss" scoped>
@@ -455,7 +467,8 @@ onLoad(async () => { const response = await getCategoryTreeAPI(); categoryList.v
   .catalog-layout .pc-filter-sidebar .sidebar-brand { font-size:13px; line-height:30px; }
   .catalog-layout .pc-filter-sidebar .price-inputs input { height:44px; padding-inline:10px; font-size:13px; }
   .catalog-main .category-nav,.catalog-main .sort-area,.catalog-main .product-grid { margin-left:0; padding-left:0; }
-  .catalog-main .category-nav { padding-top:0; padding-right:255px; }
+  .catalog-main .category-nav { padding-top:0; padding-right:calc(clamp(280px, 22vw, 360px) + 20px); align-content:flex-start; }
+  .catalog-main .category-nav button { flex-shrink:0; white-space:nowrap; }
   .catalog-main .sort-area { padding-right:0; }
   .catalog-main .product-grid { padding:12px 0 0; gap:18px 12px; }
   .catalog-main .pc-catalog-tools { top:0; right:0; }
@@ -625,6 +638,84 @@ onLoad(async () => { const response = await getCategoryTreeAPI(); categoryList.v
   .category-page .filter-actions button:nth-of-type(2) { width:136px; border-color:#244e76; background:#244e76; color:#fff; box-shadow:0 3px 8px rgba(36,78,118,.12); }
   .category-page .filter-actions button:nth-of-type(2):hover { border-color:#1b3f61; background:#1b3f61; }
   .category-page .filter-selection-summary { display:block; order:-1; margin-right:auto; color:#8a98a8; font-size:12px; line-height:20px; }
+}
+</style>
+
+<style scoped lang="scss">
+/* Shared typography for Chinese, English and Portuguese desktop filters. */
+.sort-layout-tools { display:none; }
+@media(min-width:1024px) {
+  .catalog-main .sort-area { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:14px 16px; }
+  .catalog-main .sort-tabs { grid-column:1; grid-row:1; padding-right:0; align-self:center; }
+  .catalog-main .sort-layout-tools { grid-column:2; grid-row:1; display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
+  .catalog-main .sort-layout-tools > text { color:#81909d; font-size:11px; line-height:1.4; }
+  .catalog-main .sort-area .result-line { grid-column:1 / -1; grid-row:2; margin-top:0; }
+}
+.catalog-desktop-banner { display:none; }
+.catalog-mobile-banner { display:block; }
+@media (min-width:1024px) {
+  .catalog-mobile-banner { display:none; }
+  .catalog-desktop-banner { display:contents; }
+}
+@media (min-width: 768px) {
+  .category-page .catalog-layout .pc-filter-sidebar {
+    font-size:14px;
+    line-height:1.5;
+  }
+  .category-page .catalog-layout .pc-filter-sidebar .sidebar-heading {
+    gap:12px;
+    align-items:center;
+    font-size:16px;
+    font-weight:600;
+    line-height:1.5;
+    white-space:normal;
+  }
+  .category-page .catalog-layout .pc-filter-sidebar .sidebar-heading button {
+    flex:none;
+    width:auto;
+    min-width:0;
+    height:auto;
+    padding:4px 0;
+    border:0;
+    font-size:12px;
+    font-weight:400;
+    line-height:1.5;
+    white-space:nowrap;
+  }
+  .category-page .catalog-layout .pc-filter-sidebar .sidebar-heading button::after { border:0; }
+  .category-page .catalog-layout .pc-filter-sidebar .sidebar-title {
+    margin:16px 0 8px;
+    padding-top:16px;
+    font-size:14px;
+    font-weight:600;
+    line-height:1.5;
+  }
+  .category-page .catalog-layout .pc-filter-sidebar .sidebar-brand {
+    font-size:14px;
+    font-weight:400;
+    line-height:30px;
+  }
+  .category-page .catalog-layout .pc-filter-sidebar .price-inputs input,
+  .category-page .catalog-layout .pc-filter-sidebar .quality-list button,
+  .category-page .catalog-layout .pc-filter-sidebar .filter-sizes,
+  .category-page .catalog-layout .pc-filter-sidebar .filter-sizes > text,
+  .category-page .catalog-layout .pc-filter-sidebar .filter-sizes button {
+    font-size:14px;
+    font-weight:400;
+    line-height:1.5;
+  }
+  .category-page .catalog-layout .pc-filter-sidebar .quality-list { flex-wrap:wrap; gap:6px; }
+  .category-page .catalog-layout .pc-filter-sidebar .quality-list button {
+    flex:1 1 72px;
+    height:auto;
+    min-height:34px;
+    padding:6px 8px;
+    white-space:normal;
+  }
+  .category-page .catalog-layout .pc-filter-sidebar .filter-sizes > text {
+    display:block;
+    color:#81909d;
+  }
 }
 </style>
 

@@ -25,11 +25,15 @@ export const readProductSpecs = (skus: { spData: string; stock?:number; lockStoc
     const attr = attributes.find(item => item.name === key)
     if (!attr) return undefined
     const custom = values.find(item => item.productAttributeId === attr.id)
-    const source = custom?.translations?.pt?.value ? custom.value : attr.inputList
-    const translated = custom?.translations?.pt?.value || attr.translations?.pt?.inputList
+    const translatedOptions: ContentTranslations = {}
+    for (const lang of ['en','pt'] as const) {
+    const source = custom?.translations?.[lang]?.value ? custom.value : attr.inputList
+    const translated = custom?.translations?.[lang]?.value || attr.translations?.[lang]?.inputList
     const index = (source || '').split(',').indexOf(value)
     const name = index >= 0 ? translated?.split(',')[index]?.trim() : undefined
-    return name ? { pt: { name } } : undefined
+    if (name) translatedOptions[lang] = { name }
+    }
+    return Object.keys(translatedOptions).length ? translatedOptions : undefined
   }
   const variants: { color?:string; size?:string; stock:number }[] = []
   for (const sku of skus || []) {

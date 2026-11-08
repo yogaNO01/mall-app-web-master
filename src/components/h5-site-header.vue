@@ -9,7 +9,7 @@
         <button v-for="item in navigation" :key="item.key" class="drawer-item" @click="navigate(item.key)">
           <image class="drawer-icon" :src="item.icon" mode="aspectFit" /><text class="drawer-label">{{ t(item.label) }}</text><text class="drawer-chevron">›</text>
         </button>
-        <view class="drawer-spacer" /><text class="drawer-footer">中国广州商品进出口贸易总会</text>
+        <view class="drawer-spacer" /><view class="drawer-footer"><text>中国广州商品进出口贸易总会</text><text class="drawer-footer-subtitle">GUANGZHOU GLOBAL TRADE ASSOCIATION</text></view>
       </view>
     </view>
   </view>
@@ -105,4 +105,6 @@ const navigate = (key: (typeof navigation)[number]['key']) => {
 }
 .drawer-panel > * { flex-shrink: 0; }
 .drawer-panel .drawer-spacer { min-height: 24px; flex: 1 0 24px; }
+.drawer-footer { display:flex; flex-direction:column; gap:2px; }
+.drawer-footer-subtitle { color:#81909d; font-size:clamp(7px,1.8vw,11px); font-weight:500; letter-spacing:.1em; line-height:1.2; }
 </style>

@@ -1,5 +1,6 @@
 /** Portuguese used by the storefront. Chinese text is the stable source key. */
 export const portuguese: Record<string, string> = {
+  '美国':'Estados Unidos','欧洲':'Europa','配送地区':'Região de entrega','运费':'Frete',
   'ABOUT US':'SOBRE NÓS','SHOPPING GUIDE':'COMO COMPRAR','EXPLORE BRANDS':'EXPLORE AS MARCAS','FAQ':'PERGUNTAS FREQUENTES','EVERYDAY STYLE · 2026':'ESTILO PARA TODOS OS DIAS · 2026',
   '首页':'Início','全部商品':'Todos os produtos','关于我们':'Sobre nós','商品分类列表':'Categorias de produtos',
   '商品分类':'Categorias','网站导航':'Menu','购买流程':'Como comprar','常见问题':'Perguntas frequentes',
@@ -13,7 +14,7 @@ export const portuguese: Record<string, string> = {
   '全部':'Todos','鞋子':'Calçados','衣服':'Roupas','裤子':'Calças','包包':'Bolsas','墨镜':'Óculos de sol',
   '手表':'Relógios','首饰':'Joias','珠宝':'Joias','星座水晶手链':'Pulseiras de cristais do zodíaco','水晶手链':'Pulseiras de cristais',
   '爱马仕':'Hermès','香奈儿':'Chanel','迪奥':'Dior','普拉达':'Prada','芬迪':'Fendi','罗意威':'Loewe','圣罗兰':'Saint Laurent',
-  '轻松穿搭，自在出发':'Vista-se com leveza. Viva com liberdade.',
+  '轻松穿搭，自在出发':'Vista-se com leveza. Viva com liberdade.','轻松穿搭，自由出发':'Vista-se com leveza. Viva com liberdade.',
   '当季新品':'Novidades da estação','为巴西客户精选广州各大市场的热门商品':'Seleção dos mercados de Guangzhou para o Brasil',
   '查看全部':'Ver todos','全部品牌':'Todas as marcas','精选好物':'Seleção especial','精选商品':'Seleção especial',
   '探索品牌':'Explore as marcas','按品牌快速找到你喜欢的商品':'Encontre seus favoritos por marca',
@@ -26,7 +27,7 @@ export const portuguese: Record<string, string> = {
   '发货快':'Envio ágil','严格质量检验':'Inspeção rigorosa de qualidade','国际运输':'Entrega internacional',
   '安全有保障':'Segurança em cada etapa','贴心服务':'Atendimento dedicado','全球购物更简单':'Compras internacionais mais simples',
   '专属买手':'Consultor exclusivo','一对一贴心服务':'Atendimento personalizado','一对一服务':'Atendimento personalizado',
-  '联系我们':'Fale conosco','咨询商品':'Consultar produto','选择下方渠道，复制联系方式':'Escolha um canal abaixo para copiar o contato',
+  '联系我们':'Fale conosco','咨询商品':'Consultar produto','选择下方渠道，复制联系方式':'Escolha um canal abaixo para copiar o contato','选择下方渠道，直接联系':'Escolha um canal abaixo para entrar em contato',
   '从广州出发，连接全球品质生活':'De Guangzhou para uma vida com mais qualidade',
   '专注服饰、鞋履、箱包、腕表、眼镜及珠宝首饰的精选与跨境贸易':'Seleção e comércio internacional de roupas, calçados, bolsas, relógios, óculos e joias',
   '专注服饰、鞋履、箱包、腕表、眼镜及珠宝首饰的精选与跨境贸易，为巴西客户精选广州各大市场的热门商品。':'Selecionamos roupas, calçados, bolsas, relógios, óculos e joias dos mercados de Guangzhou para clientes no Brasil.',

@@ -1,13 +1,17 @@
 <template>
-  <view class="home-page" :class="{ 'locale-pt': locale === 'pt' }">
+  <view class="home-page" :class="{ 'locale-pt': locale !== 'zh' }">
     <h5-site-header />
     <view class="search-region"
       ><storefront-search v-model="searchDraft" @search="searchProducts" /></view
     >
+    <view class="mobile-about-section">
+      <image class="mobile-about-image" src="/static/home/aboutUs_h5.svg" mode="widthFix" />
+      <text class="mobile-about-slogan">{{ t('轻松穿搭，自由出发') }}</text>
+    </view>
     <view class="hero">
       <view class="hero-image-slot">
         <image class="hero-image hero-image-mobile" src="/static/home/h5-banner.svg" mode="widthFix" />
-        <image class="hero-image hero-image-pc" src="/static/home/b547f.png" />
+        <image class="hero-image hero-image-pc" src="/static/home/aboutUs_pc.svg" />
       </view>
       <view class="hero-copy"
         ><text class="hero-eyebrow">{{ t('EVERYDAY STYLE · 2026') }}</text
@@ -19,24 +23,22 @@
         v-for="contact in contacts"
         :key="contact.id"
         class="social-card"
-        @click="copyContact(contact.value)"
+        @click="openContact(contact)"
       >
         <view class="desktop-contact-icon">
-          <template v-if="contact.id === 'whatsapp'">
+          <template v-if="contact.id.startsWith('whatsapp')">
             <image class="desktop-whatsapp-disc" src="/static/home/desktop/666ed.svg" />
             <image class="desktop-whatsapp-mark" src="/static/home/desktop/767ce.svg" />
           </template>
-          <image v-else-if="contact.id === 'whatsapp-business'" class="desktop-facebook" src="/static/home/desktop/31f2c.svg" />
           <image v-else :src="contact.icon" class="desktop-social-image" />
         </view>
         <view class="social-label"
           ><image
             :src="contact.icon"
-            :class="['social-icon', { 'whatsapp-icon': contact.id === 'whatsapp' }]"
+            :class="['social-icon', { 'whatsapp-icon': contact.id.startsWith('whatsapp') }]"
           /><text>{{ t(contact.label) }}</text></view
         >
-        <text class="social-value">{{ t(localized(contact, 'value')) }}<text class="mobile-copy">　⧉</text></text>
-        <image class="desktop-copy-icon" src="/static/home/desktop/d03d3.svg" />
+        <text class="social-value">{{ t(localized(contact, 'value')) }}</text>
       </button>
     </view>
     <view class="home-section new-products">
@@ -64,21 +66,7 @@
         />
       </view>
       <text v-else class="load-message">{{ t('新品即将上架，敬请期待') }}</text>
-    </view>
-    <view id="home-about" class="about-section">
-      <text class="section-title">{{ t('关于我们') }}</text>
-      <button class="about-visual" :aria-label="t('了解关于我们')" @click="aboutOpen = true">
-        <image class="about-base" src="/static/home/065b7.png" mode="aspectFill" />
-        <view class="about-photo-slot"
-          ><image class="about-photo" src="/static/home/b16cc.png" mode="aspectFit"
-        /></view>
-        <image class="play-icon" src="/static/home/9050f.svg" />
-      </button>
-      <text class="about-title">{{ t('从广州出发，连接全球品质生活') }}</text>
-      <text class="about-description"
-        >{{ t('专注服饰、鞋履、箱包、腕表、眼镜及珠宝首饰的精选与跨境贸易') }}</text
-      >
-      <button class="about-button" @click="aboutOpen = true">{{ t('了解更多 >>') }}</button>
+      <button class="mobile-more-button" @click="openCategories">{{ t('查看全部') }} ›</button>
     </view>
     <view class="services-section">
       <text class="services-title">{{ t('服务保障') }}</text>
@@ -126,12 +114,13 @@
               class="brand-logo"
           /></view>
           <view class="brand-caption"
-            ><text>{{ t(localized(brand, 'name')) }}</text
+            ><text>{{ localized(brand, 'name') }}</text
             ><image src="/static/home/5df61.svg" class="brand-arrow"
           /></view>
         </button>
       </view>
       <text v-else-if="!loading" class="load-message">{{ t('暂无品牌') }}</text>
+      <button class="mobile-more-button" @click="openBrands">{{ t('全部品牌') }} ›</button>
     </view>
     <view class="home-section editorial-section">
       <home-section-title
@@ -172,15 +161,15 @@
           ><text>{{ t(consultedProduct ? '咨询商品' : '联系我们') }}</text
           ><button :aria-label="t('关闭联系方式')" @click="contactOpen = false">×</button></view
         >
-        <text v-if="consultedProduct" class="consulted-product">{{ t(localized(consultedProduct, 'name')) }}</text
-        ><text class="dialog-description">{{ t('选择下方渠道，复制联系方式') }}</text>
+        <text v-if="consultedProduct" class="consulted-product">{{ localized(consultedProduct, 'name') }}</text
+        ><text class="dialog-description">{{ t('选择下方渠道，直接联系') }}</text>
         <button
           v-for="contact in contacts"
           :key="contact.id"
           class="contact-option"
-          @click="copyContact(contact.value)"
+          @click="openContact(contact)"
           ><text>{{ t(contact.label) }}</text
-          ><text>{{ t(localized(contact, 'value')) }}　⧉</text></button
+          ><text>{{ t(localized(contact, 'value')) }}</text></button
         >
       </view>
     </view>
@@ -239,24 +228,14 @@ const colorAssets = [
 ]
 // Display-only placeholders from the design, pending confirmation of real contact details.
 const contacts = [
-  { id: 'whatsapp', label: 'WhatsApp', value: '+57 350 4897066', icon: '/static/home/a2edb.svg' },
+  { id: 'whatsapp-1', label: 'WhatsApp 1', value: '+57 350 4897066', icon: '/static/home/a2edb.svg' },
+  { id: 'whatsapp-2', label: 'WhatsApp 2', value: '+57 350 4897066', icon: '/static/home/a2edb.svg' },
+  { id: 'whatsapp-3', label: 'WhatsApp 3', value: '+57 350 4897066', icon: '/static/home/a2edb.svg' },
   {
     id: 'instagram',
     label: 'Instagram',
     value: '@ahkdsh.official',
     icon: '/static/home/557ff.png',
-  },
-  {
-    id: 'whatsapp-business',
-    label: 'WhatsApp',
-    value: '+57 350 4897066',
-    icon: '/static/home/4fba6.svg',
-  },
-  {
-    id: 'twitter',
-    label: 'X（Twitter）',
-    value: '@ahkdsh.official',
-    icon: '/static/home/8e037.png',
   },
 ]
 const services = [
@@ -319,7 +298,12 @@ const consultProduct = (product: PmsProduct) => {
   consultedProduct.value = product
   contactOpen.value = true
 }
-const copyContact = (value: string) => uni.setClipboardData({ data: value })
+const openContact = (contact: (typeof contacts)[number]) => {
+  const url = contact.id.startsWith('whatsapp')
+    ? `https://wa.me/${contact.value.replace(/\D/g, '')}`
+    : `https://www.instagram.com/${contact.value.replace(/^@/, '')}/`
+  window.open(url, '_blank', 'noopener,noreferrer')
+}
 const showLanguage = () => setLocale(locale.value === 'zh' ? 'pt' : 'zh')
 const scrollHome = () => uni.pageScrollTo({ scrollTop: 0, duration: 300 })
 const scrollAbout = () => uni.pageScrollTo({ selector: '#home-about', duration: 300 })
@@ -336,7 +320,7 @@ const contactFromAbout = () => {
 <style lang="scss" scoped>
 @use '@/styles/home-tokens.scss' as *;
 .desktop-navigation, .desktop-search, .desktop-language, .desktop-contact-icon,
-.desktop-copy-icon, .desktop-service-icon, .desktop-service-divider { display: none; }
+.desktop-service-icon, .desktop-service-divider { display: none; }
 .desktop-service-icon {
   width: 30px;
   height: 35px;
@@ -413,6 +397,7 @@ button::after {
   line-height: 21px;
 }
 .hero {
+  display: none;
   position: relative;
   width: 100vw;
   height: auto;
@@ -420,6 +405,31 @@ button::after {
   aspect-ratio: 390 / 260;
   overflow: hidden;
   background: $home-pale;
+}
+.mobile-about-section {
+  position: relative;
+  display: block;
+  width: 100vw;
+  padding: 0;
+  background: #fff;
+}
+.mobile-about-image {
+  display: block;
+  width: 100vw;
+  height: auto;
+}
+.mobile-about-slogan {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 88%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(15, 41, 69, .35);
 }
 .hero-image-slot {
   position: relative;
@@ -432,6 +442,10 @@ button::after {
   display: block;
   width: 100vw;
   height: auto;
+}
+.hero-image-mobile {
+  height: 100%;
+  object-fit: cover;
 }
 .hero-image-pc { display: none; }
 .hero-copy {
@@ -532,6 +546,20 @@ button::after {
   margin: 16px auto 0;
   font-size: 12px;
   color: $home-blue;
+}
+.mobile-more-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 40px;
+  margin-top: 18px;
+  border: 1px solid $home-line;
+  border-radius: 6px;
+  background: #fff;
+  color: $home-navy;
+  font-size: 13px;
+  line-height: 1.4;
 }
 .about-section {
   position: relative;
@@ -990,7 +1018,9 @@ button::after {
   .language-divider { margin: 0 10px; color: #81909d; }
   .language-button { font-size: clamp(16px, 1.25vw, 24px); }
   .menu-button, .search-region { display: none; }
-  .hero { width: 100%; height: auto; margin-left: 0; aspect-ratio: 1920 / 722.85; }
+  .mobile-about-section { display: none; }
+  .mobile-more-button { display: none; }
+  .hero { display: block; width: 100%; height: auto; margin-left: 0; aspect-ratio: 1920 / 722.85; }
   .hero-image-slot { width: 100%; height: 100%; position: absolute; inset: 0; }
   .hero-image { position: absolute; inset: 0; width: 100%; height: 100%; }
   .hero-image-mobile { display: none; }
@@ -1009,7 +1039,7 @@ button::after {
   .about-photo { top: 0; height: 100%; width: 100%; }
   .about-section > .section-title, .about-section > .about-title, .about-section > .about-description { visibility: hidden; position: absolute; }
   .about-section > .about-button { position: absolute; top: 74.6%; left: 4.06%; width: auto; padding: 12px 30px; font-size: clamp(16px, 1.15vw, 22px); line-height: 1.5; }
-  .services-section { display: flex; align-items: center; gap: 28px; padding: 26px 5.208%; background: white; border-bottom: 1px solid $home-line; }
+  .services-section { display: flex; align-items: center; gap: 28px; padding: 26px 5.208%; background: white; border-bottom: 1px solid $home-line;border-top: 1px solid $home-line; }
   .services-title { display: none; }
   .services-grid { display: contents; }
   .desktop-service-icon { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; flex-shrink: 0; }
@@ -1106,8 +1136,6 @@ button::after {
   .social-label .social-icon { position:absolute; left:12px; top:50%; width:36px; height:36px; transform:translateY(-50%); }
   .social-label, .social-value { max-width:100%; overflow:hidden; text-overflow:ellipsis; }
   .social-value { font-size:clamp(12px,1vw,18px); line-height:1.35; }
-  .mobile-copy { display:none; }
-  .desktop-copy-icon { display:block; position:absolute; right:12px; top:50%; width:18px; height:18px; transform:translateY(-50%); opacity:.72; }
   .services-section { gap:20px; padding:20px 5.208%; }
   .service-name,.buyer-title { font-size:clamp(14px,1.15vw,20px); }
   .service-description,.buyer-description { font-size:clamp(10px,.75vw,14px); }

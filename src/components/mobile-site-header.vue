@@ -1,16 +1,16 @@
 <template>
   <view>
     <view class="mobile-header">
-      <text class="brand" @click="$emit('home')">中国广州商品进出口贸易总会</text>
-      <button class="language" :aria-label="t(locale === 'zh' ? '选择语言，当前为中文' : '选择语言，当前为葡萄牙语')" aria-haspopup="dialog" :aria-expanded="languageOpen" @click="languageOpen = true"><text class="current-language">{{ locale === 'zh' ? '中文' : 'PT' }}</text><text class="chevron" :class="{ expanded: languageOpen }" /></button>
+      <view class="brand-block" @click="$emit('home')"><text class="brand">中国广州商品进出口贸易总会</text><text class="brand-subtitle">GUANGZHOU GLOBAL TRADE ASSOCIATION</text></view>
+      <button class="language" :aria-label="t('选择语言')" aria-haspopup="dialog" :aria-expanded="languageOpen" @click="languageOpen = true"><text class="current-language">{{ locale === 'zh' ? '中文' : locale.toUpperCase() }}</text><text class="chevron" :class="{ expanded: languageOpen }" /></button>
       <button class="menu" :aria-label="t('打开网站导航')" @click="$emit('menu')"><image src="/static/home/18751.svg" mode="aspectFit" /></button>
     </view>
     <view v-if="languageOpen" v-modal-scroll-lock class="language-overlay" @click="languageOpen = false" @keydown.esc="languageOpen = false">
       <view class="language-sheet" role="dialog" aria-modal="true" :aria-label="t('选择语言')" @click.stop>
         <view class="sheet-handle" />
         <view class="sheet-heading"><text>{{ t('选择语言') }}</text><button class="sheet-close" :aria-label="t('关闭语言选择')" @click="languageOpen = false">×</button></view>
-        <button class="language-option" :class="{ selected: locale === 'zh' }" :aria-pressed="locale === 'zh'" @click="chooseLanguage('zh')"><view class="option-copy"><text>简体中文</text><text class="option-subtitle">{{ locale === 'zh' ? t('当前语言') : 'Chinês simplificado' }}</text></view><text v-if="locale === 'zh'" class="selected-check">✓</text></button>
-        <button class="language-option" :class="{ selected: locale === 'pt' }" :aria-pressed="locale === 'pt'" @click="chooseLanguage('pt')"><view class="option-copy"><text>Português</text><text class="option-subtitle">{{ locale === 'pt' ? t('当前语言') : '葡萄牙语' }}</text></view><text v-if="locale === 'pt'" class="selected-check">✓</text></button>
+        <button class="language-option" :class="{ selected: locale === 'zh' }" :aria-pressed="locale === 'zh'" @click="chooseLanguage('zh')"><view class="option-copy"><text>简体中文</text><text class="option-subtitle">{{ locale === 'zh' ? t('当前语言') : 'Simplified Chinese' }}</text></view><text v-if="locale === 'zh'" class="selected-check">✓</text></button>
+        <button v-for="language in [{code:'en',name:'English'},{code:'pt',name:'Português'}]" :key="language.code" class="language-option" :class="{ selected: locale === language.code }" @click="chooseLanguage(language.code as StorefrontLocale)"><view class="option-copy"><text>{{ language.name }}</text></view><text v-if="locale === language.code" class="selected-check">✓</text></button>
       </view>
     </view>
   </view>
@@ -30,7 +30,9 @@ watch(() => route.fullPath, () => { languageOpen.value = false })
 </script>
 <style scoped>
 .mobile-header { display:flex; align-items:center; gap:6px; box-sizing:border-box; width:100%; min-height:64px; padding:10px 18px; border-bottom:1px solid #edf0f2; background:#fff; color:#153451; }
-.brand { flex:1; min-width:0; font-size:clamp(13px,3.85vw,20px); font-weight:700; white-space:nowrap; }
+.brand-block { display:flex; flex:1; min-width:0; flex-direction:column; gap:1px; }
+.brand { min-width:0; font-size:clamp(13px,3.85vw,20px); font-weight:700; white-space:nowrap; }
+.brand-subtitle { overflow:hidden; color:#81909d; font-size:clamp(6px,1.55vw,9px); font-weight:500; letter-spacing:.1em; line-height:1.2; text-overflow:ellipsis; white-space:nowrap; }
 button { box-sizing:border-box; margin:0; padding:0; border:0; background:transparent; color:inherit; box-shadow:none; cursor:pointer; -webkit-tap-highlight-color:transparent; }
 button::after { border:0; }
 button:focus-visible { outline:2px solid #7199c4; outline-offset:2px; }

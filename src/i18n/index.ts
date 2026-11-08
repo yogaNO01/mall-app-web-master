@@ -1,16 +1,17 @@
 import { ref } from 'vue'
 import { portuguese } from './pt'
+import { english } from './languages'
 
-export type StorefrontLocale = 'zh' | 'pt'
+export type StorefrontLocale = 'zh' | 'en' | 'pt'
 export type ContentTranslations = Partial<Record<StorefrontLocale, Record<string, string>>>
 const STORAGE_KEY = 'mall-storefront-locale'
 export const organizationName = '中国广州商品进出口贸易总会'
 const savedLocale = () => {
-  try { return uni.getStorageSync(STORAGE_KEY) === 'pt' ? 'pt' : 'zh' } catch { return 'zh' }
+  try { const saved = uni.getStorageSync(STORAGE_KEY); return ['zh','en','pt'].includes(saved) ? saved : 'en' } catch { return 'en' }
 }
 export const locale = ref<StorefrontLocale>(savedLocale())
-const overrides = ref<Record<string, { zh: string; pt: string }>>({})
-const entityNames = ref<Record<string, string>>({})
+const entityNames = ref<Record<string, Partial<Record<StorefrontLocale, string>>>>({})
+const dictionary = () => locale.value === 'en' ? english : portuguese
 export function registerLocaleEntities(records: unknown) {
   if (!Array.isArray(records)) return
   const next = { ...entityNames.value }
@@ -18,7 +19,7 @@ export function registerLocaleEntities(records: unknown) {
     for (const value of items) {
       if (!value || typeof value !== 'object') continue
       const item = value as { name?: string; translations?: ContentTranslations; children?: unknown[] }
-      if (item.name && item.translations?.pt?.name?.trim()) next[item.name] = item.translations.pt.name
+      if (item.name) next[item.name] = Object.fromEntries(['en','pt'].map(lang => [lang,item.translations?.[lang as StorefrontLocale]?.name || '']))
       if (item.children) read(item.children)
     }
   }
@@ -30,20 +31,19 @@ const patterns = Object.entries(portuguese).filter(([key]) => /\{\w+\}/.test(key
     if (/^\{\w+\}$/.test(part)) { names.push(part.slice(1, -1)); return '(.+?)' }
     return part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   }).join('')
-  return { expression: new RegExp(`^${pattern}$`), names, value }
+  return { expression: new RegExp(`^${pattern}$`), names, value, key }
 })
 
 /** Translate UI copy, without touching canonical SKU values or request parameters. */
 export function t(source: unknown, values: Record<string, unknown> = {}): string {
   const key = source == null ? '' : String(source)
-  if (key === organizationName) return key
-  const custom = (locale.value === 'pt' ? entityNames.value[key] : undefined) || overrides.value[key]?.[locale.value]
-  let result = (custom?.trim() ? custom : undefined) || (locale.value === 'pt' ? portuguese[key] : key) || key
-  if (locale.value === 'pt' && result === key) {
+  if (key === organizationName) return locale.value === 'zh' ? key : locale.value === 'pt' ? 'Associação de Comércio Global de Guangzhou' : 'Guangzhou Global Trade Association'
+  let result = (locale.value !== 'zh' ? dictionary()[key] : key) || key
+  if (locale.value !== 'zh' && result === key) {
     for (const pattern of patterns) {
       const match = key.match(pattern.expression)
       if (match) {
-        result = pattern.value.replace(/\{(\w+)\}/g, (_, name) => t(match[pattern.names.indexOf(name) + 1]))
+        result = (dictionary()[pattern.key] || key).replace(/\{(\w+)\}/g, (_, name) => t(match[pattern.names.indexOf(name) + 1]))
         break
       }
     }
@@ -54,31 +54,29 @@ export function t(source: unknown, values: Record<string, unknown> = {}): string
 export function localized(record: unknown, field: string): string {
   if (!record || typeof record !== 'object') return ''
   const content = record as Record<string, unknown> & { translations?: ContentTranslations }
-  if (content[field] === organizationName) return organizationName
-  if (locale.value === 'pt' && ['brandName','productCategoryName'].includes(field) && entityNames.value[String(content[field])]) return entityNames.value[String(content[field])]
   const translated = content.translations?.[locale.value]?.[field]
-  return translated?.trim() || t(content[field])
+  if (translated?.trim()) return translated
+  if (locale.value !== 'zh' && ['brandName','productCategoryName'].includes(field) && entityNames.value[String(content[field])]?.[locale.value]) return entityNames.value[String(content[field])][locale.value]!
+  return content[field] == null ? '' : String(content[field])
 }
 
 /** Match a translated option by its original value, preserving the SKU identity. */
 export function localizedOption(record: unknown, value: string): string {
-  if (locale.value !== 'pt' || !record || typeof record !== 'object') return t(value.split('|')[0])
+  if (locale.value === 'zh' || !record || typeof record !== 'object') return value.split('|')[0]
   const attr = record as { inputList?: string; translations?: ContentTranslations }
   const options = (attr.inputList || '').split(',')
   const index = options.indexOf(value)
-  const translated = attr.translations?.pt?.inputList?.split(',')[index]?.trim()
-  return t(translated || value.split('|')[0])
+  const translated = attr.translations?.[locale.value]?.inputList?.split(',')[index]?.trim()
+  return translated || value.split('|')[0]
 }
 
 export function setLocale(value: StorefrontLocale) {
   locale.value = value
   try { uni.setStorageSync(STORAGE_KEY, value) } catch { /* A session can still switch languages without storage. */ }
-  if (typeof document !== 'undefined') document.documentElement.lang = value === 'pt' ? 'pt-BR' : 'zh-CN'
+  if (typeof document !== 'undefined') document.documentElement.lang = value === 'zh' ? 'zh-CN' : value === 'pt' ? 'pt-BR' : 'en'
 }
 
-let copyLoaded = false
 let lookupsLoaded = false
-let lastCopyAttempt = 0
 export async function loadStorefrontCopy() {
   if (!lookupsLoaded) {
     lookupsLoaded = true
@@ -87,15 +85,6 @@ export async function loadStorefrontCopy() {
       if (result.code === 200) registerLocaleEntities(result.data)
     }, fail: () => {} })
   }
-  if (copyLoaded || Date.now() - lastCopyAttempt < 60000) return
-  lastCopyAttempt = Date.now()
-  copyLoaded = true
-  // Keep the bundled dictionary available while an older API is being upgraded.
-  uni.request({ url: '/home/translations', success: response => {
-    const result = response.data as { code?: number; data?: { source: string; zh: string; pt: string }[] }
-    if (result.code === 200 && Array.isArray(result.data)) overrides.value = Object.fromEntries(result.data.map(item => [item.source, { zh: item.zh, pt: item.pt }]))
-    else copyLoaded = false
-  }, fail: () => { copyLoaded = false } })
 }
 
 export const useLocale = () => ({ locale, t, localized, localizedOption, setLocale })

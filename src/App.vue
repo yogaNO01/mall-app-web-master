@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onLaunch, onShow, onHide } from '@dcloudio/uni-app'
 import { commerceEnabled } from '@/config/features'
+import { loadFreightSettings } from '@/utils/money'
 
 onLaunch(() => {
   // #ifdef H5
@@ -10,6 +11,7 @@ onLaunch(() => {
   console.log('App Launch')
 })
 onShow(() => {
+  void loadFreightSettings()
   // #ifdef H5
   uni.hideTabBar({ animation: false, fail: () => {} })
   // #endif
@@ -86,6 +88,12 @@ uni-page-body > view:first-child {
   uni-page-body {
     width: 1400px;
     max-width: 1400px;
+  }
+}
+@media (width > 2140px) {
+  uni-page-body {
+    width: 1900px;
+    max-width: 1900px;
   }
 }
 body {

@@ -38,7 +38,7 @@
           <text class="spec">{{ formatProductAttr(item.productAttr) }}</text>
           <text class="promotion clamp">{{ item.promotionName }}</text>
           <view class="price-box">
-            <text class="price">￥{{ item.productPrice }}</text>
+            <text class="price">{{ formatMoneyAmount(Number(item.productPrice)) }}</text>
             <text class="number">x {{ item.productQuantity }}</text>
           </view>
         </view>
@@ -49,23 +49,23 @@
     <view class="yt-list">
       <view class="yt-list-cell b-b">
         <text class="cell-tit clamp">商品合计</text>
-        <text class="cell-tip">￥{{ order.totalAmount }}</text>
+        <text class="cell-tip">{{ formatMoneyAmount(Number(order.totalAmount)) }}</text>
       </view>
       <view class="yt-list-cell b-b">
         <text class="cell-tit clamp">运费</text>
-        <text class="cell-tip">￥{{ order.freightAmount }}</text>
+        <text class="cell-tip">{{ formatMoneyAmount(Number(order.freightAmount)) }}</text>
       </view>
       <view class="yt-list-cell b-b">
         <text class="cell-tit clamp">活动优惠</text>
-        <text class="cell-tip red">-￥{{ order.promotionAmount }}</text>
+        <text class="cell-tip red">-{{ formatMoneyAmount(Number(order.promotionAmount)) }}</text>
       </view>
       <view class="yt-list-cell b-b">
         <text class="cell-tit clamp">优惠券</text>
-        <text class="cell-tip red">-￥{{ order.couponAmount }}</text>
+        <text class="cell-tip red">-{{ formatMoneyAmount(Number(order.couponAmount)) }}</text>
       </view>
       <view class="yt-list-cell b-b">
         <text class="cell-tit clamp">积分抵扣</text>
-        <text class="cell-tip red">-￥{{ order.integrationAmount }}</text>
+        <text class="cell-tip red">-{{ formatMoneyAmount(Number(order.integrationAmount)) }}</text>
       </view>
       <view class="yt-list-cell desc-cell">
         <text class="cell-tit clamp">备注</text>
@@ -92,7 +92,7 @@
         v-if="order.status === 1 || order.status === 2 || order.status === 3"
       >
         <text class="cell-tit clamp">实付金额</text>
-        <text class="cell-tip">￥{{ order.payAmount }}</text>
+        <text class="cell-tip">{{ formatMoneyAmount(Number(order.payAmount)) }}</text>
       </view>
       <view
         class="yt-list-cell b-b"
@@ -127,6 +127,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatMoneyAmount } from '@/utils/money'
 import { ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { formatDate } from '@/utils/date'
