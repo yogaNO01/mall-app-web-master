@@ -1,5 +1,5 @@
 <template>
-  <view class="home-page" :class="{ 'locale-pt': locale !== 'zh' }">
+  <view class="home-page" :class="{ 'locale-pt': locale !== 'zh', 'locale-es': locale === 'es' }">
     <h5-site-header />
     <view class="search-region"
       ><storefront-search v-model="searchDraft" @search="searchProducts" /></view
@@ -549,6 +549,7 @@ button::after {
 }
 @media(max-width:1023px) {
   .brands-section :deep(.heading-more),
+  .new-products :deep(.heading-more),
   .editorial-section :deep(.heading-more) { display:none; }
 }
 .mobile-more-button {
@@ -1030,7 +1031,11 @@ button::after {
   .hero-image { position: absolute; inset: 0; width: 100%; height: 100%; }
   .hero-image-mobile { display: none; }
   .hero-image-pc { display: block; }
-  .hero-copy { visibility: hidden; }
+  .hero-copy { visibility:hidden; }
+  .locale-es .hero::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,#83b8e6 0%,#83b8e6 39%,rgba(131,184,230,0) 59%); pointer-events:none; }
+  .locale-es .hero-copy { visibility:visible; z-index:1; inset:auto; top:50%; left:4%; width:40%; padding:0; transform:translateY(-50%); align-items:flex-start; text-align:left; }
+  .locale-es .hero-title { color:#fff; font-size:clamp(26px,2.8vw,42px); line-height:1.2; }
+  .locale-es .hero-eyebrow { font-size:13px; }
   .social-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; padding: 32px 5.208%; background: #fefbf5; border-bottom: 1px solid #e5dace; }
   .social-card { border: 0; border-radius: 0; padding: 0; background: transparent; align-items: flex-start; }
   .social-label { font-size: clamp(14px, 1.04vw, 20px); }

@@ -23,6 +23,15 @@
   overflow-wrap:anywhere;
 }
 .service-name,.buyer-title { white-space:nowrap; word-break:keep-all; }
+@media(min-width:1024px) {
+  .category-hero .category-banner-pt {
+    position:absolute; inset:0;
+    background:linear-gradient(90deg,#e3f1fc 0%,#e3f1fc 43%,rgba(227,241,252,.8) 49%,rgba(227,241,252,0) 65%),url('/static/category/banner-pc.png') right center / auto 100% no-repeat;
+  }
+  .category-banner-copy { display:flex; position:absolute; left:5%; top:50%; width:41%; transform:translateY(-50%); flex-direction:column; gap:12px; }
+  .category-hero .category-banner-copy .category-banner-title { position:static; display:block; color:#153451; font-size:clamp(22px,3.4vw,44px); font-weight:700; line-height:1.2; }
+  .category-hero .category-banner-copy .category-banner-description { position:static; display:block; color:#486d91; font-size:clamp(11px,1.25vw,17px); line-height:1.6; }
+}
 html[lang='pt-BR'] {
   .heading-more,.sidebar-heading,.sidebar-title,.info-heading,.filter-title { white-space:nowrap; }
   .heading-row { height:auto; min-height:34px; }
@@ -36,13 +45,6 @@ html[lang='pt-BR'] {
   .pc-filter-sidebar .sidebar-title { font-size:clamp(11px,.9vw,14px); letter-spacing:-.1px; }
   .pc-filter-sidebar .quality-list { flex-wrap:wrap; }
   .pc-filter-sidebar .quality-list uni-button { flex:1 1 70px; }
-  .category-hero .category-banner-pt {
-    position:absolute; inset:0;
-    background:linear-gradient(90deg,#e3f1fc 0%,#e3f1fc 43%,rgba(227,241,252,.8) 49%,rgba(227,241,252,0) 65%),url('/static/category/banner-pc.png') right center / auto 100% no-repeat;
-  }
-  .category-banner-copy { display:flex; position:absolute; left:5%; top:50%; width:41%; transform:translateY(-50%); flex-direction:column; gap:12px; }
-  .category-hero .category-banner-copy .category-banner-title { position:static; display:block; color:#153451; font-size:clamp(22px,3.4vw,44px); font-weight:700; line-height:1.2; }
-  .category-hero .category-banner-copy .category-banner-description { position:static; display:block; color:#486d91; font-size:clamp(11px,1.25vw,17px); line-height:1.6; }
   @media(max-width:1023px) {
     .heading-title { max-width:100%; padding-inline:54px; overflow:visible; font-size:20px; line-height:1.35; text-align:center; white-space:normal; text-overflow:clip; overflow-wrap:break-word; }
     .heading-more { max-width:none; }
