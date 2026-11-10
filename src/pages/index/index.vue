@@ -226,15 +226,14 @@ const colorAssets = [
   '/static/home/7c31f.svg',
   '/static/home/126cc.svg',
 ]
-// Display-only placeholders from the design, pending confirmation of real contact details.
 const contacts = [
-  { id: 'whatsapp-1', label: 'WhatsApp 1', value: '+57 350 4897066', icon: '/static/home/a2edb.svg' },
-  { id: 'whatsapp-2', label: 'WhatsApp 2', value: '+57 350 4897066', icon: '/static/home/a2edb.svg' },
-  { id: 'whatsapp-3', label: 'WhatsApp 3', value: '+57 350 4897066', icon: '/static/home/a2edb.svg' },
+  { id: 'whatsapp-1', label: 'WhatsApp 1', value: 'https://wa.me/message/L6BPFOED5EWPL1', icon: '/static/home/a2edb.svg' },
+  { id: 'whatsapp-2', label: 'WhatsApp 2', value: 'http://wa.me/message/YCW3AKETHQVYM1', icon: '/static/home/a2edb.svg' },
+  { id: 'whatsapp-3', label: 'WhatsApp 3', value: 'https://wa.me/message/L6BPFOED5EWPL1', icon: '/static/home/a2edb.svg' },
   {
     id: 'instagram',
     label: 'Instagram',
-    value: '@ahkdsh.official',
+    value: 'https://www.instagram.com/aagoodwang',
     icon: '/static/home/557ff.png',
   },
 ]
@@ -299,10 +298,7 @@ const consultProduct = (product: PmsProduct) => {
   contactOpen.value = true
 }
 const openContact = (contact: (typeof contacts)[number]) => {
-  const url = contact.id.startsWith('whatsapp')
-    ? `https://wa.me/${contact.value.replace(/\D/g, '')}`
-    : `https://www.instagram.com/${contact.value.replace(/^@/, '')}/`
-  window.open(url, '_blank', 'noopener,noreferrer')
+  window.open(contact.value, '_blank', 'noopener,noreferrer')
 }
 const showLanguage = () => setLocale(locale.value === 'zh' ? 'pt' : 'zh')
 const scrollHome = () => uni.pageScrollTo({ scrollTop: 0, duration: 300 })
@@ -519,7 +515,11 @@ button::after {
   font-size: 10px;
   line-height: 15px;
   color: $home-muted;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  min-width: 0;
+  max-width: 100%;
 }
 .home-section {
   padding: 34px 16px 32px;
@@ -992,6 +992,9 @@ button::after {
   font-size: 12px;
   line-height: 20px;
   text-align: left;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 @media (max-width: 374px) {
   .home-header {
@@ -1147,7 +1150,7 @@ button::after {
   .social-card { position:relative; width:min(100%, 300px); justify-self:center; align-items:flex-start; padding:8px 42px 8px 64px; gap:0; min-height:58px; box-sizing:border-box; justify-content:center; border:1px solid transparent; border-radius:12px; }
   .social-label { font-size:13px; }
   .social-label .social-icon { position:absolute; left:12px; top:50%; width:36px; height:36px; transform:translateY(-50%); }
-  .social-label, .social-value { max-width:100%; overflow:hidden; text-overflow:ellipsis; }
+  .social-label, .social-value { max-width:100%; min-width:0; overflow:visible; white-space:normal; overflow-wrap:anywhere; }
   .social-value { font-size:clamp(12px,1vw,18px); line-height:1.35; }
   .services-section { gap:20px; padding:20px 5.208%; }
   .service-name,.buyer-title { font-size:clamp(14px,1.15vw,20px); }
@@ -1157,5 +1160,39 @@ button::after {
   .commute-image-slot,.weekend-image-slot,.accessories-image-slot { height:100%; aspect-ratio:auto; }
   .editorial-title { font-size:clamp(18px,1.5vw,28px); }
   .editorial-description { font-size:clamp(12px,1vw,18px); }
+}
+.social-card {
+  min-width: 0;
+  width: 100%;
+  height: auto;
+  box-sizing: border-box;
+}
+.social-value {
+  display: block;
+  line-height: 1.6;
+  text-align: center;
+  font-size: 12px;
+}
+.social-label {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.contact-option > text {
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 359px) {
+  .social-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .social-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) {
+  .social-card { padding: 12px 8px 12px 56px; gap: 4px; }
+  .social-label { justify-content: flex-start; }
+  .social-value { text-align: left; font-size: clamp(10px, .65vw, 12px); font-weight: 500; }
 }
 </style>
