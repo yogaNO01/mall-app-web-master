@@ -56,7 +56,7 @@
       >
       <view v-else-if="newProductList.length" class="product-grid">
         <home-product-card
-          v-for="(product, index) in newProductList.slice(0, 8)"
+          v-for="(product, index) in newProductList"
           :key="product.id"
           :product="product"
           :color-asset="colorAssets[index % colorAssets.length]"
@@ -200,7 +200,7 @@ import { ref } from 'vue'
 import { useModalScrollLock } from '@/composables/use-modal-scroll-lock'
 const vModalScrollLock = useModalScrollLock()
 import { onLoad, onShow, onHide, onPullDownRefresh } from '@dcloudio/uni-app'
-import { getHomeContentAPI } from '@/apis/home'
+import { searchProductListAPI } from '@/apis/product'
 import { getBrandRecommendListAPI } from '@/apis/brand'
 import type { PmsProduct } from '@/types/product'
 import type { PmsBrand } from '@/types/brand'
@@ -248,12 +248,11 @@ const loadData = async () => {
   loadError.value = false
   try {
     const [response, brands] = await Promise.allSettled([
-      getHomeContentAPI(), getBrandRecommendListAPI({ pageNum: 1, pageSize: 100 }),
+      searchProductListAPI({ pageNum: 1, pageSize: 4, sort: 0 }), getBrandRecommendListAPI({ pageNum: 1, pageSize: 100 }),
     ])
     if (brands.status === 'fulfilled') brandList.value = brands.value.data || []
-    else if (response.status === 'fulfilled') brandList.value = response.value.data?.brandList || []
     if (response.status === 'rejected') throw response.reason
-    newProductList.value = response.value.data?.newProductList || []
+    newProductList.value = response.value.data?.list?.slice(0, 4) || []
   } catch (error) {
     loadError.value = true
     console.error('加载首页数据失败', error)

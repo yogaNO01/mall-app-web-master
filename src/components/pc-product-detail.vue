@@ -113,7 +113,7 @@
           <text v-if="product.subTitle || product.description" class="subtitle">{{ (localized(product, 'subTitle') || localized(product, 'description')) }}</text>
 
           <view v-for="spec in specList" :key="spec.id" class="spec-block">
-            <view class="spec-label"><text class="required">*</text>{{ localized(spec, 'name') }}：<b>{{ displayOption(spec, selectedValue(spec.id)) }}</b></view>
+            <view class="spec-label"><text class="required">*</text>{{ t(localized(spec, 'name')) }}：<b>{{ displayOption(spec, selectedValue(spec.id)) }}</b></view>
             <view class="spec-options">
               <button
                 v-for="option in optionsFor(spec.id)"

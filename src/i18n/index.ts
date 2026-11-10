@@ -65,10 +65,10 @@ export function localized(record: unknown, field: string): string {
 export function localizedOption(record: unknown, value: string): string {
   if (locale.value === 'zh' || !record || typeof record !== 'object') return value.split('|')[0]
   const attr = record as { inputList?: string; translations?: ContentTranslations }
-  const options = (attr.inputList || '').split(',')
-  const index = options.indexOf(value)
+  const options = (attr.inputList || '').split(',').map(option => option.trim())
+  const index = options.indexOf(value.trim())
   const translated = attr.translations?.[locale.value]?.inputList?.split(',')[index]?.trim()
-  return translated || value.split('|')[0]
+  return translated || t(value.split('|')[0])
 }
 
 export function setLocale(value: StorefrontLocale) {
