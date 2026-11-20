@@ -151,11 +151,11 @@
     </view>
 
     <!-- 图文详情 -->
-    <view class="detail-desc">
+    <view v-if="desc" class="detail-desc">
       <view class="d-header">
         <text>{{ t('图文详情') }}</text>
       </view>
-      <rich-text :nodes="t(desc)"></rich-text>
+      <rich-text :nodes="desc"></rich-text>
     </view>
 
     <!-- 底部操作菜单 -->
@@ -273,7 +273,7 @@
 </template>
 
 <script setup lang="ts">
-import { t, localized, locale, setLocale, type ContentTranslations } from '@/i18n'
+import { t, localized, localizedProductDetail, locale, setLocale, type ContentTranslations } from '@/i18n'
 import { formatProductMoney, formatFreight } from '@/utils/money'
 
 import H5SiteHeader from '@/components/h5-site-header.vue'
@@ -605,7 +605,7 @@ const initPromotionTipList = (data: any) => {
 
 // 初始化商品详情HTML
 const initProductDesc = () => {
-  let rawhtml = localized(product.value, 'detailMobileHtml') || localized(product.value, 'detailHtml')
+  const rawhtml = localizedProductDetail(product.value, 'detailMobileHtml')
 
   // #ifdef H5
   const tempNode = document.createElement('div')

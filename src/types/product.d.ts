@@ -60,6 +60,8 @@ export type PmsProduct = {
   description: string
   /** 详情标题 */
   detailTitle: string
+  /** 详情描述（电脑端HTML） */
+  detailHtml?: string
   /** 详情描述（移动端HTML） */
   detailMobileHtml: string
   /** 商品编码 */

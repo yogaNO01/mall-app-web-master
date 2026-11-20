@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite'
 import uni from '@dcloudio/vite-plugin-uni'
 
+const productionOrigin = process.env.MALL_API_ORIGIN
+
 // https://vitejs.dev/config/
 export default defineConfig({
   server: {
@@ -8,11 +10,12 @@ export default defineConfig({
     port: 5174,
     strictPort: true,
     proxy: {
+      ...(productionOrigin ? { '/media': { target: productionOrigin, changeOrigin: true } } : {}),
       // 浏览器使用同源 /api，由开发服务器访问本机商城后端。
       '/api': {
-        target: 'http://127.0.0.1:8085',
+        target: productionOrigin || 'http://127.0.0.1:8085',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api(?=\/|$)/, ''),
+        rewrite: (path) => productionOrigin ? path : path.replace(/^\/api(?=\/|$)/, ''),
       },
     },
   },

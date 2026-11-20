@@ -83,12 +83,12 @@
               <view class="info-box description-text">{{ (localized(product, 'description') || localized(product, 'subTitle')) }}</view>
             </detail-collapse>
           </view>
-          <view v-if="product.detailMobileHtml" class="info-section">
+          <view v-if="detailContent" class="info-section rich-detail-section" :class="{ 'is-expanded': openSections.content }">
             <button class="info-heading" :aria-expanded="openSections.content" @click="toggleSection('content')">
               <text>{{ t('图文详情') }}</text><view class="toggle-label"><text>{{ t(openSections.content ? '收起' : '展开') }}</text><image class="toggle-chevron" :class="{ expanded: openSections.content }" src="/static/home/detail-arrow.svg" mode="aspectFit" aria-hidden="true" /></view>
             </button>
             <detail-collapse :open="openSections.content">
-              <view class="rich-detail"><rich-text :nodes="localized(product, 'detailMobileHtml')" /></view>
+              <view class="rich-detail"><rich-text :nodes="detailContent" /></view>
             </detail-collapse>
           </view>
         </view>
@@ -152,9 +152,9 @@
 </template>
 
 <script setup lang="ts">
-import { t, localized, localizedOption, locale, type ContentTranslations } from '@/i18n'
+import { t, localized, localizedOption, localizedProductDetail, locale, type ContentTranslations } from '@/i18n'
 
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import HomeProductCard from '@/components/home-product-card.vue'
 import CardRegionPicker from '@/components/card-region-picker.vue'
 import DetailCollapse from '@/components/detail-collapse.vue'
@@ -195,6 +195,16 @@ const availableStock = computed(() => props.skus.length ? selectedSku.value ? av
 watch(availableStock, stock => { quantity.value = Math.max(1, Math.min(quantity.value, stock)) })
 type SectionKey = 'details' | 'material' | 'description' | 'content'
 const closedSections = (): Record<SectionKey, boolean> => ({ details: false, material: false, description: false, content: false })
+const mobileDetail = ref(false)
+const detailViewport = typeof window === 'undefined' ? undefined : window.matchMedia('(max-width:1023px)')
+const updateDetailViewport = () => { mobileDetail.value = detailViewport?.matches ?? false }
+updateDetailViewport()
+onMounted(() => detailViewport?.addEventListener('change', updateDetailViewport))
+onBeforeUnmount(() => detailViewport?.removeEventListener('change', updateDetailViewport))
+const detailContent = computed(() => {
+  const field = mobileDetail.value ? 'detailMobileHtml' : 'detailHtml'
+  return localizedProductDetail(props.product, field)
+})
 const openSections = ref<Record<SectionKey, boolean>>(closedSections())
 const visibleImages = computed(() => props.images.filter(Boolean).slice(0, 8))
 const activeImage = computed(() => visibleImages.value[currentImage.value] || props.product.pic || '/static/errorImage.jpg')
@@ -516,6 +526,10 @@ onBeforeUnmount(() => { recommendationRequest++ })
 }
 </style>
 <style scoped>
+/* Expanding rich content can move the browser's scroll anchor below it. */
+:global(html:has(.rich-detail-section.is-expanded)) {
+  overflow-anchor:none;
+}
 .price-row .price { white-space:pre-line; font-size:24px; line-height:1.5; }
 .freight-summary { display:block; margin-top:8px; color:#81909d; font-size:13px; line-height:1.5; }
 .price-row .old-price { white-space:pre-line; line-height:1.5; }

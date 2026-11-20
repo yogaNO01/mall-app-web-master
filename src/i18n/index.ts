@@ -52,6 +52,15 @@ export function t(source: unknown, values: Record<string, unknown> = {}): string
   return result.replace(/\{(\w+)\}/g, (placeholder, name) => values[name] == null ? placeholder : String(values[name]))
 }
 
+export function localizedProductDetail(
+  product: { detailHtml?: string; detailMobileHtml?: string; translations?: ContentTranslations },
+  field: 'detailHtml' | 'detailMobileHtml',
+): string {
+  const language = locale.value
+  const html = language === 'zh' ? product[field] : product.translations?.[language]?.[field]
+  return html?.trim() || ''
+}
+
 export function localized(record: unknown, field: string): string {
   if (!record || typeof record !== 'object') return ''
   const content = record as Record<string, unknown> & { translations?: ContentTranslations }
