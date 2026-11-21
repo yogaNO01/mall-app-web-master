@@ -26,11 +26,11 @@ export const getBrandProductListAPI = (params: BrandProductListParam) => {
   })
 }
 
-/** 获取推荐品牌列表 */
-export const getBrandRecommendListAPI = (params?: PageParam) => {
+/** 获取可见品牌列表 */
+export const getVisibleBrandListAPI = (params?: PageParam) => {
   return http<PmsBrand[]>({
     method: 'GET',
-    url: '/brand/recommendList',
+    url: '/brand/list',
     params,
   })
 }

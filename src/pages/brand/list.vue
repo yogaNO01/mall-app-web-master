@@ -17,7 +17,7 @@ import { t, localized, locale } from '@/i18n'
 import { computed, ref } from 'vue'
 import { onLoad, onPullDownRefresh, onReachBottom } from '@dcloudio/uni-app'
 import H5SiteHeader from '@/components/h5-site-header.vue'
-import { getBrandRecommendListAPI } from '@/apis/brand'
+import { getVisibleBrandListAPI } from '@/apis/brand'
 import type { PmsBrand } from '@/types/brand'
 const brands = ref<PmsBrand[]>([])
 const query = ref('')
@@ -37,7 +37,7 @@ const loadBrands = async (refresh = false) => {
   error.value = false
   const nextPage = refresh ? 1 : page
   try {
-    const response = await getBrandRecommendListAPI({ pageNum:nextPage,pageSize:12 })
+    const response = await getVisibleBrandListAPI({ pageNum:nextPage,pageSize:12 })
     if (current !== request) return
     const incoming = response.data || []
     brands.value = [...new Map([...(refresh ? [] : brands.value),...incoming].map(brand => [brand.id,brand])).values()]

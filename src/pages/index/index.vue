@@ -201,7 +201,7 @@ import { useModalScrollLock } from '@/composables/use-modal-scroll-lock'
 const vModalScrollLock = useModalScrollLock()
 import { onLoad, onShow, onHide, onPullDownRefresh } from '@dcloudio/uni-app'
 import { searchProductListAPI } from '@/apis/product'
-import { getBrandRecommendListAPI } from '@/apis/brand'
+import { getVisibleBrandListAPI } from '@/apis/brand'
 import type { PmsProduct } from '@/types/product'
 import type { PmsBrand } from '@/types/brand'
 import HomeSectionTitle from '@/components/home-section-title.vue'
@@ -248,7 +248,7 @@ const loadData = async () => {
   loadError.value = false
   try {
     const [response, brands] = await Promise.allSettled([
-      searchProductListAPI({ pageNum: 1, pageSize: 4, sort: 0 }), getBrandRecommendListAPI({ pageNum: 1, pageSize: 100 }),
+      searchProductListAPI({ pageNum: 1, pageSize: 4, sort: 0 }), getVisibleBrandListAPI({ pageNum: 1, pageSize: 100 }),
     ])
     if (brands.status === 'fulfilled') brandList.value = brands.value.data || []
     if (response.status === 'rejected') throw response.reason
