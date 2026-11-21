@@ -30,7 +30,7 @@
 
     <!-- 轮播图 -->
     <view class="carousel">
-      <swiper indicator-dots circular :duration="400">
+      <swiper :key="activeColorAlbumKey" indicator-dots circular :duration="400">
         <swiper-item class="swiper-item" v-for="(item, index) in imgList" :key="index">
           <view class="image-wrapper">
             <image :src="item" class="loaded" mode="aspectFill"></image>
@@ -365,13 +365,30 @@ const couponState = ref(0)
 // 商品数据
 const product = ref<PmsProduct>({} as PmsProduct)
 const brand = ref<PmsBrand>({} as PmsBrand)
-const imgList = ref<string[]>([])
+const defaultImages = ref<string[]>([])
 const desc = ref('')
 
 // 规格相关
 const specList = ref<PmsProductAttribute[]>([])
 const specChildList = ref<SpecOption[]>([])
 const specSelected = ref<SpecOption[]>([])
+const colorAlbums = computed<Record<string, unknown>>(() => {
+  try {
+    const data = JSON.parse(product.value.translations?.zh?.colorAlbums || '{}')
+    return data && typeof data === 'object' && !Array.isArray(data) ? data : {}
+  } catch {
+    return {}
+  }
+})
+const activeColorAlbumKey = computed(() => specSelected.value.find(option =>
+  Object.prototype.hasOwnProperty.call(colorAlbums.value, option.name),
+)?.name || '')
+const imgList = computed(() => {
+  const album = colorAlbums.value[activeColorAlbumKey.value]
+  if (!Array.isArray(album)) return defaultImages.value
+  const images = album.filter((url): url is string => typeof url === 'string' && !!url.trim()).slice(0, 10)
+  return images.length ? images : defaultImages.value
+})
 const skuStockList = ref<PmsSkuStock[]>([])
 
 // 属性、促销、服务
@@ -426,7 +443,7 @@ const loadData = async (id: number) => {
       product.value = data.product
       skuStockList.value = data.skuStockList || []
       brand.value = data.brand
-      imgList.value = []
+      defaultImages.value = []
       specList.value = []
       specChildList.value = []
       specSelected.value = []
@@ -486,7 +503,7 @@ const initImgList = () => {
   tempPics.unshift(product.value.pic)
   for (const item of [...new Set(tempPics)]) {
     if (item != null && item !== '') {
-      imgList.value.push(item)
+      defaultImages.value.push(item)
     }
   }
 }

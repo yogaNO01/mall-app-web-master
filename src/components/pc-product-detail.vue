@@ -30,7 +30,7 @@
           </view>
           <view v-if="visibleImages.length > 4" class="thumbs secondary">
             <button
-              v-for="(image, index) in visibleImages.slice(4, 8)"
+              v-for="(image, index) in visibleImages.slice(4)"
               :key="`${image}-secondary-${index}`"
               :class="{ active: currentImage === index + 4 }"
               @click="currentImage = index + 4"
@@ -206,7 +206,8 @@ const detailContent = computed(() => {
   return localizedProductDetail(props.product, field)
 })
 const openSections = ref<Record<SectionKey, boolean>>(closedSections())
-const visibleImages = computed(() => props.images.filter(Boolean).slice(0, 8))
+const visibleImages = computed(() => props.images.filter(Boolean).slice(0, 10))
+watch(() => props.images, () => { currentImage.value = 0 })
 const activeImage = computed(() => visibleImages.value[currentImage.value] || props.product.pic || '/static/errorImage.jpg')
 const attrList = computed(() => props.attributes.filter((item) => item.value))
 const materialAttributes = computed(() => attrList.value.filter((item) => /材质|面料|成分|保养|洗涤|material|fabric|care/i.test(item.key)))
