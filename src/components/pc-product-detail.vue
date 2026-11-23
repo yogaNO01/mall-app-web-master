@@ -115,11 +115,20 @@
           </view>
           <view class="price-row">
             <view class="detail-region-picker"><card-region-picker :model-value="detailRegion" @update:model-value="previewRegion = $event" /></view>
-            <view class="price-values" aria-live="polite"><text class="price">{{ detailPrice('price') }}</text><text v-if="hasProductOriginalPrice(product, detailRegion)" class="old-price">{{ detailPrice('originalPrice') }}</text></view>
+            <view class="price-values" aria-live="polite"><text class="price">{{ detailPrice('price') }}</text><text v-if="hasProductOriginalPrice(displayProduct, detailRegion)" class="old-price">{{ detailPrice('originalPrice') }}</text></view>
           </view>
           <text class="freight-summary" aria-live="polite">{{ t('运费') }}: {{ detailFreight }}</text>
           <text v-if="product.subTitle || product.description" class="subtitle">{{ (localized(product, 'subTitle') || localized(product, 'description')) }}</text>
 
+          <view v-if="grades.length" class="spec-block">
+            <view class="spec-label">{{ t('品质等级') }}</view>
+            <view class="spec-options">
+              <text v-if="grades.length === 1">{{ grades[0].grade }}</text>
+              <template v-else>
+                <button v-for="row in grades" :key="row.grade" class="spec-option" :class="{ selected: activeGrade?.grade === row.grade }" :aria-pressed="activeGrade?.grade === row.grade" @click="chosenGrade = row.grade">{{ row.grade }}</button>
+              </template>
+            </view>
+          </view>
           <view v-for="spec in specList" :key="spec.id" class="spec-block">
             <view class="spec-label"><text class="required">*</text>{{ t(localized(spec, 'name')) }}：<b>{{ displayOption(spec, selectedValue(spec.id)) }}</b></view>
             <view class="spec-options">
@@ -137,7 +146,7 @@
 
           <view class="quantity-row"><text>{{ t('购买数量') }}</text><view class="stepper"><button :aria-label="t('减少数量')" :disabled="quantity <= 1" @click="quantity = Math.max(1, quantity - 1)">−</button><text>{{ t(quantity) }}</text><button :aria-label="t('增加数量')" :disabled="quantity >= availableStock" @click="quantity += 1">+</button></view><text class="stock-hint">{{ t(availableStock > 0 ? `库存 ${availableStock} 件` : '该规格暂时无货') }}</text></view>
           <view class="primary-actions">
-            <button class="consult" @click="consultOnWhatsApp(product)"><image src="/static/home/whatsapp-white.svg" mode="aspectFit" /><text class="consult-desktop-label">{{ t(availableStock > 0 ? 'WhatsApp 咨询购买' : 'WhatsApp 咨询库存') }}</text><text class="consult-mobile-label">{{ t('咨询') }}</text></button>
+            <button class="consult" @click="consultOnWhatsApp(product, activeGrade?.grade, detailRegion)"><image src="/static/home/whatsapp-white.svg" mode="aspectFit" /><text class="consult-desktop-label">{{ t(availableStock > 0 ? 'WhatsApp 咨询购买' : 'WhatsApp 咨询库存') }}</text><text class="consult-mobile-label">{{ t('咨询') }}</text></button>
             <button class="share" @click="shareProduct">{{ t('↗  分享链接') }}</button>
           </view>
         </view>
@@ -167,6 +176,7 @@ import HomeProductCard from '@/components/home-product-card.vue'
 import CardRegionPicker from '@/components/card-region-picker.vue'
 import DetailCollapse from '@/components/detail-collapse.vue'
 import { searchProductListAPI } from '@/apis/product'
+import { productGrades, selectGrade, pricedProduct } from '@/utils/product-grades'
 import { consultOnWhatsApp } from '@/utils/whatsapp'
 import { isColorSpec, parseProductColor } from '@/utils/product-colors'
 import type { PmsProduct, PmsProductAttribute, PmsSkuStock, SpecOption } from '@/types/product'
@@ -178,6 +188,8 @@ const { searchProducts } = useProductSearch()
 
 const props = defineProps<{
   product: PmsProduct
+  initialGrade?: string
+  initialRegion?: string
   images: string[]
   specList: PmsProductAttribute[]
   specOptions: SpecOption[]
@@ -189,9 +201,20 @@ const emit = defineEmits<{ (event: 'select-spec', option: SpecOption): void }>()
 const currentImage = ref(0)
 const quantity = ref(1)
 const previewRegion = ref<PriceRegion>()
-const detailRegion = computed(() => previewRegion.value || market.value)
+const detailRegion = computed(() => {
+  const region = props.initialRegion
+  return previewRegion.value || (region === 'cn' || region === 'us' || region === 'eu' ? region : market.value)
+})
+const chosenGrade = ref<string>()
+const grades = computed(() => productGrades(props.product))
+const activeGrade = computed(() => selectGrade(grades.value, detailRegion.value, chosenGrade.value || props.initialGrade))
+const displayProduct = computed(() => pricedProduct(props.product, activeGrade.value))
+watch(() => [props.product.id, props.initialGrade, props.initialRegion], () => {
+  chosenGrade.value = undefined
+  previewRegion.value = undefined
+})
 const compactCurrency = (value: string) => value.replace(/^(CNY|USD|EUR)\s/, '')
-const detailPrice = (field: ProductMoneyField) => compactCurrency(formatProductMoney(props.product, field, detailRegion.value))
+const detailPrice = (field: ProductMoneyField) => compactCurrency(formatProductMoney(displayProduct.value, field, detailRegion.value))
 const detailFreight = computed(() => compactCurrency(formatFreight(quantity.value, detailRegion.value)))
 const recommendations = ref<PmsProduct[]>([])
 const recommendationPage = ref(1)
@@ -229,7 +252,7 @@ const toggleSection = (section: SectionKey) => { openSections.value[section] = !
 const moveImage = (direction: number) => { if (visibleImages.value.length) currentImage.value = (currentImage.value + direction + visibleImages.value.length) % visibleImages.value.length }
 const goHome = () => uni.switchTab({ url: '/pages/index/index' })
 const goCategory = () => searchProducts('', { categoryId: props.product.productCategoryId })
-const openProduct = (item: PmsProduct) => uni.navigateTo({ url: `/pages/product/product?id=${item.id}` })
+const openProduct = (_item: PmsProduct, url: string) => uni.navigateTo({ url })
 
 const loadRecommendations = async () => {
   if (!props.product.id || !props.product.productCategoryId) return

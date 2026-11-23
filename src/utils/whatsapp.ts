@@ -3,11 +3,12 @@ import { locale, localized } from '@/i18n'
 
 const contactUrl = 'https://wa.me/message/L6BPFOED5EWPL1'
 
-/** Open a contact chat with the exact three-line product inquiry. */
-export function consultOnWhatsApp(product: PmsProduct) {
-  let productLink = `/pages/product/product?id=${product.id}`
+import type { PriceRegion } from './money'
+import { productDetailUrl } from './product-grades'
+export function consultOnWhatsApp(product: PmsProduct, grade?: string, region?: PriceRegion) {
+  let productLink = productDetailUrl(product.id, grade, region)
   // #ifdef H5
-  productLink = `${window.location.origin}${window.location.pathname}#/pages/product/product?id=${product.id}`
+  productLink = `${window.location.origin}${window.location.pathname}#${productLink}`
   // #endif
   const productName = localized(product, 'name')
   const productCode = product.productSn || product.id
@@ -17,7 +18,8 @@ export function consultOnWhatsApp(product: PmsProduct) {
     pt: `Olá, tenho interesse em ${productName}.\nLink do produto: ${productLink}\nSKU: ${productCode}`,
     es: `Hola, me interesa ${productName}.\nEnlace del producto: ${productLink}\nSKU: ${productCode}`,
   }
-  const message = messages[locale.value]
+  const gradeLabel = { zh: '品质等级', en: 'Grade', pt: 'Grau', es: 'Grado' }[locale.value]
+  const message = messages[locale.value] + (grade ? `\n${gradeLabel}: ${grade}` : '')
   const url = `${contactUrl}?text=${encodeURIComponent(message)}`
   // #ifdef H5
   window.open(url, '_blank', 'noopener,noreferrer')

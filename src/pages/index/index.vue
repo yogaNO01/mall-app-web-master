@@ -277,7 +277,7 @@ const navigate = (url: string) => {
   uni.navigateTo({ url })
 }
 const openBrands = () => navigate('/pages/brand/list')
-const openProduct = (product: PmsProduct) => navigate('/pages/product/product?id=' + product.id)
+const openProduct = (product: PmsProduct, url?: string) => navigate(url || '/pages/product/product?id=' + product.id)
 const openBrand = (brand: PmsBrand) => navigate('/pages/brand/brandDetail?id=' + brand.id)
 const openCategories = () => {
   menuOpen.value = false

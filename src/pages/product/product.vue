@@ -6,6 +6,8 @@
     <pc-product-detail v-else
       class="pc-detail"
       :product="product"
+      :initial-grade="initialGrade"
+      :initial-region="initialRegion"
       :images="imgList"
       :spec-list="specList"
       :spec-options="specChildList"
@@ -473,7 +475,11 @@ const loadData = async (id: number) => {
 // ===== onLoad =====
 
 // 页面加载
+const initialGrade = ref<string>()
+const initialRegion = ref<string>()
 onLoad((options) => {
+  initialGrade.value = options?.grade
+  initialRegion.value = options?.region
   // 获取状态栏高度
   const systemInfo = uni.getSystemInfoSync()
   statusBarHeight.value = systemInfo.statusBarHeight || 0
@@ -918,7 +924,9 @@ const handleCheckLogin = () => {
   })
 }
 // #ifdef H5
-watch(() => [productRoute.path,productRoute.query.id], ([path,id]) => {
+watch(() => [productRoute.path, productRoute.query.id, productRoute.query.grade, productRoute.query.region], ([path, id, grade, region]) => {
+  initialGrade.value = typeof grade === 'string' ? grade : undefined
+  initialRegion.value = typeof region === 'string' ? region : undefined
   if (path === '/pages/product/product') void loadData(Number(id))
 }, { immediate:true })
 // #endif

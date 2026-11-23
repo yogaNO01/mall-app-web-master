@@ -1,17 +1,17 @@
 <template>
   <view :class="['product-card', variant, { 'hide-mobile-consult-icon': hideMobileConsultIcon }]">
-    <button v-if="variant === 'catalog'" class="catalog-consult" :aria-label="t('咨询商品')" @click="consultOnWhatsApp(product)"><image src="/static/home/whatsapp-white.svg" mode="aspectFit"/></button>
+    <button v-if="variant === 'catalog'" class="catalog-consult" :aria-label="t('咨询商品')" @click="consultOnWhatsApp(product, activeGrade?.grade, cardRegion)"><image src="/static/home/whatsapp-white.svg" mode="aspectFit"/></button>
     <image
       class="product-image"
       :src="imageFailed ? '/static/errorImage.jpg' : product.pic || '/static/errorImage.jpg'"
       @error="imageFailed = true"
       :mode="variant === 'catalog' ? 'aspectFit' : 'aspectFill'"
-      @click="$emit('detail', product)"
+      @click="$emit('detail', product, detailUrl)"
     />
     <view class="product-info">
-      <button v-if="variant === 'catalog'" class="catalog-detail" :aria-label="t('查看商品详情')" @click="$emit('detail', product)">›</button>
+      <button v-if="variant === 'catalog'" class="catalog-detail" :aria-label="t('查看商品详情')" @click="$emit('detail', product, detailUrl)">›</button>
       <text class="brand clamp">{{ (localized(product, 'brandName') || t('精选商品')) }}</text>
-      <text class="product-name clamp" role="link" tabindex="0" @keydown.enter="$emit('detail', product)" @click="$emit('detail', product)">{{ localized(product, 'name') }}</text>
+      <text class="product-name clamp" role="link" tabindex="0" @keydown.enter="$emit('detail', product, detailUrl)" @click="$emit('detail', product, detailUrl)">{{ localized(product, 'name') }}</text>
       <view v-if="showColorPreview && productColors.length" class="card-meta-row">
         <view v-if="showColorPreview && productColors.length" class="product-colors" :aria-label="t('可选颜色')"><text v-for="color in productColors" :key="color.value" class="product-color-dot" :style="{ backgroundColor: color.color }" :title="localized(color, 'name')" /></view>
       </view>
@@ -20,16 +20,20 @@
       <view class="card-price-values">
       <view class="prices">
         <text class="price">{{ cardPrice('price') }}</text>
-        <text v-if="hasProductOriginalPrice(product, cardRegion)" class="original-price"
+        <text v-if="hasProductOriginalPrice(displayProduct, cardRegion)" class="original-price"
           >{{ cardPrice('originalPrice') }}</text
         >
       </view>
       </view>
       </view>
+      <picker v-if="grades.length > 1 && !hideGradePicker" :range="grades" range-key="grade" :value="grades.findIndex(row => row.grade === activeGrade?.grade)" @change="chosenGrade = grades[Number($event.detail.value)]?.grade">
+        <button class="grade-trigger" :aria-label="t('品质等级')">{{ activeGrade?.grade }} <span class="grade-chevron" aria-hidden="true" /></button>
+      </picker>
+      <text v-if="grades.length === 1 && activeGrade" class="grade-trigger">{{ activeGrade.grade }}</text>
       <text class="freight" aria-live="polite">{{ t('运费') }} {{ cardFreight }}</text>
       <view class="product-actions">
-        <button class="detail-button" @click="$emit('detail', product)"><image class="desktop-action-icon detail-icon" src="/static/home/desktop/d7d3f.svg" />{{ t('查看详情') }}</button>
-        <button class="consult-button" @click="consultOnWhatsApp(product)"><image class="consult-icon" src="/static/home/whatsapp-white.svg" mode="aspectFit" />{{ t('咨询购买') }}</button>
+        <button class="detail-button" @click="$emit('detail', product, detailUrl)"><image class="desktop-action-icon detail-icon" src="/static/home/desktop/d7d3f.svg" />{{ t('查看详情') }}</button>
+        <button class="consult-button" @click="consultOnWhatsApp(product, activeGrade?.grade, cardRegion)"><image class="consult-icon" src="/static/home/whatsapp-white.svg" mode="aspectFit" />{{ t('咨询购买') }}</button>
       </view>
     </view>
   </view>
@@ -45,7 +49,8 @@ import CardRegionPicker from './card-region-picker.vue'
 import { ref, watch, computed } from 'vue'
 import { getCatalogProductDetail, readProductSpecs } from '@/utils/catalog-product-details'
 import type { ProductColor } from '@/utils/product-colors'
-const props = withDefaults(defineProps<{ product: PmsProduct; colorAsset: string; variant?: 'default' | 'catalog'; showColorPreview?: boolean; hideMobileConsultIcon?: boolean }>(), {
+import { productGrades, selectGrade, pricedProduct, productDetailUrl } from '@/utils/product-grades'
+const props = withDefaults(defineProps<{ product: PmsProduct; colorAsset: string; variant?: 'default' | 'catalog'; showColorPreview?: boolean; hideMobileConsultIcon?: boolean; preferredGrade?: string; hideGradePicker?: boolean }>(), {
   variant: 'default',
   showColorPreview: true,
   hideMobileConsultIcon: false,
@@ -54,7 +59,13 @@ const productColors = ref<ProductColor[]>([])
 const previewRegion=ref<PriceRegion>()
 const cardRegion=computed(()=>previewRegion.value || market.value)
 const compactCurrency=(value:string)=>value.replace(/^(CNY|USD|EUR)\s/,'')
-const cardPrice=(field:ProductMoneyField)=>compactCurrency(formatProductMoney(props.product,field,cardRegion.value))
+const chosenGrade = ref<string>()
+const grades = computed(() => productGrades(props.product))
+const activeGrade = computed(() => selectGrade(grades.value, cardRegion.value, chosenGrade.value || props.preferredGrade))
+const displayProduct = computed(() => pricedProduct(props.product, activeGrade.value))
+const cardPrice=(field:ProductMoneyField)=>compactCurrency(formatProductMoney(displayProduct.value,field,cardRegion.value))
+const detailUrl = computed(() => productDetailUrl(props.product.id, activeGrade.value?.grade, cardRegion.value))
+watch(() => [props.product.id, props.preferredGrade], () => { chosenGrade.value = undefined })
 const cardFreight=computed(()=>compactCurrency(formatFreight(1,cardRegion.value)))
 watch(()=>props.product.id,()=>{previewRegion.value=undefined})
 const imageFailed = ref(false)
@@ -70,7 +81,7 @@ watch(() => [props.product.id, props.showColorPreview] as const, async ([id, sho
   } catch { /* Keep the card usable if color metadata is unavailable. */ }
 }, { immediate: true })
 defineEmits<{
-  (event: 'detail', product: PmsProduct): void
+  (event: 'detail', product: PmsProduct, url: string): void
   (event: 'consult', product: PmsProduct): void
 }>()
 </script>
@@ -78,6 +89,8 @@ defineEmits<{
 <style lang="scss" scoped>
 @use '@/styles/home-tokens.scss' as *;
 .desktop-action-icon { display: none; }
+.grade-trigger { display:inline-flex; align-items:center; gap:8px; align-self:flex-start; margin:4px 0; padding:4px 9px; border:1px solid #dbe4ed; border-radius:6px; background:#f4f7fa; color:#244e76; font-size:12px; line-height:20px; }
+.grade-chevron { width:5px; height:5px; border:solid currentColor; border-width:0 1px 1px 0; transform:rotate(45deg); }
 .product-name.clamp { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; white-space:normal; min-height:3em; overflow:hidden; overflow-wrap:anywhere; }
 .product-colors { display:flex; align-items:center; flex-wrap:wrap; gap:6px; min-height:18px; }
 .product-color-dot { display:block; width:15px; height:15px; flex:none; border:1px solid #bbc4ce; border-radius:50%; }

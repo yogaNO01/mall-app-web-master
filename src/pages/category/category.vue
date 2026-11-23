@@ -26,7 +26,7 @@
     <view class="pc-catalog-tools"><storefront-search v-model="searchDraft" class="catalog-search-field" compact submit-on-clear @search="submitSearch" /></view>
     <view v-if="keyword" class="search-summary"><text>{{ t('“{keyword}”的搜索结果', { keyword }) }}</text><button @click="clearSearch">{{ t('清空搜索') }}</button></view>
     <view v-if="activeFilterChips.length" class="active-filters"><button v-for="chip in activeFilterChips" :key="chip.id" @click="removeFilterChip(chip)">{{ t(chip.label) }} <text>×</text></button><button class="clear-all-filters" @click="resetFilters">{{ t('清空筛选') }}</button></view>
-    <view v-if="!productsLoading && !productsError" class="product-grid" :class="{ 'list-layout': listLayout }"><home-product-card v-for="item in productList" :key="item.id" :product="item" color-asset="/static/home/126cc.svg" variant="catalog" hide-mobile-consult-icon @detail="openDetail" @consult="openContact" /></view>
+    <view v-if="!productsLoading && !productsError" class="product-grid" :class="{ 'list-layout': listLayout }"><home-product-card v-for="item in productList" :key="item.id" :product="item" color-asset="/static/home/126cc.svg" variant="catalog" hide-mobile-consult-icon :preferred-grade="quality" hide-grade-picker @detail="openDetail" @consult="openContact" /></view>
     <view v-if="totalPages > 1" class="mobile-pagination"><button :disabled="currentPage === 1 || productsLoading" @click="goPage(currentPage - 1)">{{ t('上一页') }}</button><template v-for="(page, index) in pageItems" :key="index"><text v-if="page === '…'">…</text><button v-else :class="{ active: currentPage === page }" :disabled="productsLoading" :aria-current="currentPage === page ? 'page' : undefined" @click="goPage(page)">{{ t(page) }}</button></template><button :disabled="currentPage === totalPages || productsLoading" @click="goPage(currentPage + 1)">{{ t('下一页') }}</button></view>
     <view v-if="productsLoading" class="empty-state" role="status" aria-live="polite">{{ t('正在查找商品…') }}</view><view v-else-if="productsError" class="empty-state"><text>{{ t('商品加载失败') }}</text><button @click="loadProducts(currentPage)">{{ t('重新加载') }}</button></view><view v-else-if="!productList.length" class="empty-state"><text>{{ t(keyword ? `没有找到“${keyword}”相关商品` : '暂无匹配商品') }}</text><text class="empty-hint">{{ t('试试其他商品名称、品牌或货号，或调整筛选条件') }}</text><view class="empty-actions"><button v-if="keyword" @click="clearSearch">{{ t('清空搜索') }}</button><button @click="resetFilters">{{ t('重置筛选') }}</button></view></view>
     </view>
@@ -367,7 +367,7 @@ const goPage = async (page: number) => {
 const selectCategory = (id?: number) => { void router.replace({ path: route.path, query: { ...route.query, categoryId: id ? String(id) : undefined } }) }
 const changeSort = (value: number) => { sort.value = value; void loadProducts() }
 const togglePrice = () => { sort.value = sort.value === 3 ? 4 : 3; void loadProducts() }
-const openDetail = (product: PmsProduct) => uni.navigateTo({ url: `/pages/product/product?id=${product.id}` })
+const openDetail = (_product: PmsProduct, url: string) => uni.navigateTo({ url })
 const openContact = (product: PmsProduct) => { consultedProduct.value = product; contactOpen.value = true }
 
 watch([selectedBrands, selectedColors, selectedSizes, minPrice, maxPrice, quality, discountOnly], () => { void loadProducts() })

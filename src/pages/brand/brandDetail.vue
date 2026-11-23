@@ -184,9 +184,9 @@ const handleToggleFavorite = async () => {
 }
 
 // ===== 跳转商品详情 =====
-const handleNavToDetail = (item: PmsProduct) => {
+const handleNavToDetail = (item: PmsProduct, url?: string) => {
   uni.navigateTo({
-    url: `/pages/product/product?id=${item.id}`,
+    url: url || `/pages/product/product?id=${item.id}`,
   })
 }
 
