@@ -3,7 +3,7 @@ import type { ProductColor } from '@/utils/product-colors'
 import type { ContentTranslations } from '@/i18n'
 import { marketProductAmount as productAmount } from '@/utils/money'
 
-export type CatalogEntry = { product: PmsProduct; colors: ProductColor[]; sizes: string[]; quality: string; variants?: {color?:string;size?:string;stock:number}[]; sizeTranslations?: Record<string, ContentTranslations> }
+export type CatalogEntry = { product: PmsProduct; colors: ProductColor[]; sizes: string[]; quality: string[]; variants?: {color?:string;size?:string;stock:number}[]; sizeTranslations?: Record<string, ContentTranslations> }
 export type CatalogFilters = { brands: string[]; colors: string[]; sizes: string[]; min: string; max: string; quality: string; keyword: string; sort: number; discount: boolean }
 export const validatePriceRange = (min:string,max:string) => {
   if ([min,max].some(value => value.trim() && (!Number.isFinite(Number(value)) || Number(value) < 0))) return '请输入有效的非负价格'
@@ -23,7 +23,7 @@ export const filterCatalog = (entries: CatalogEntry[], filters: CatalogFilters) 
     (!(filters.colors.length && filters.sizes.length && variants?.length) || variants.some(variant => filters.colors.includes(variant.color || '') && filters.sizes.includes(variant.size || '') && variant.stock > 0)) &&
     (!filters.min || (price != null && price >= Number(filters.min))) &&
     (!filters.max || (price != null && price <= Number(filters.max))) &&
-    (!filters.quality || quality === filters.quality) &&
+    (!filters.quality || quality.includes(filters.quality)) &&
     (!filters.discount || (price != null && originalPrice != null && originalPrice > price)) &&
     (!keyword || `${p.name} ${p.productSn} ${p.brandName} ${p.subTitle || ''}`.toLowerCase().includes(keyword))
   )}).map(entry => entry.product)

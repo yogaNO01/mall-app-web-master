@@ -17,7 +17,7 @@
       <text class="sidebar-title">{{ t('价格区间') }}</text><view class="price-inputs"><input v-model="minPrice" :placeholder="pricePlaceholder('20')" type="number"/><input v-model="maxPrice" :placeholder="pricePlaceholder('5,000')" type="number"/></view>
       <text v-if="priceRangeError" class="filter-error">{{ t(priceRangeError) }}</text>
       <text class="sidebar-title">{{ t('颜色') }}</text><view class="filter-colors"><button v-for="color in availableColors" :key="color.color" :class="{ selected: selectedColors.includes(color.color) }" :style="{ backgroundColor: color.color }" :title="t(`${localized(color, 'name')} ${color.color}`)" :aria-label="localized(color, 'name')" :aria-pressed="selectedColors.includes(color.color)" @click="toggleColor(color.color)" /></view>
-      <text class="sidebar-title">{{ t('品质等级') }}</text><view class="quality-list"><button v-for="item in ['高级','中级','基础级']" :key="item" :class="{active:quality===item}" @click="quality=item">{{ t(item) }}</button></view>
+      <text class="sidebar-title">{{ t('品质等级') }}</text><view class="quality-list"><button v-for="item in ['7A','10A','12A']" :key="item" :class="{active:quality===item}" @click="quality=item">{{ item }}</button></view>
       <text class="sidebar-title">{{ t('尺码/规格') }}</text><view class="filter-sizes"><text v-if="!selectedCategory">{{ t('请先选择分类') }}</text><button v-for="size in availableSizes" :key="size" :class="{ selected: selectedSizes.includes(size) }" @click="toggleSize(size)">{{ sizeLabel(size) }}</button></view>
     </view>
     <view class="catalog-main">
@@ -61,7 +61,7 @@
           </view>
           <view class="filter-section">
             <text class="filter-title">{{ t('品质等级') }}</text>
-            <view class="quality-list"><button v-for="item in ['高级','中级','基础级']" :key="item" :class="{ active: quality === item }" :aria-pressed="quality === item" @click="quality = item">{{ t(item) }}</button></view>
+            <view class="quality-list"><button v-for="item in ['7A','10A','12A']" :key="item" :class="{ active: quality === item }" :aria-pressed="quality === item" @click="quality = item">{{ item }}</button></view>
           </view>
         </view>
         <view class="filter-actions"><button @click="resetFilters">{{ t('重置') }}</button><button @click="applyFilters">{{ t('应用筛选') }}</button><text class="filter-selection-summary">{{ t(activeFilterChips.length ? `已选 ${activeFilterChips.length} 项条件` : '支持组合筛选') }}</text></view>
@@ -265,6 +265,19 @@ let loadedKey: string | null = null
 let catalogLoadedAt = 0
 let catalogEntries: CatalogEntry[] = []
 let catalogPending: { key: string; promise: Promise<CatalogEntry[]> } | undefined
+const readProductGrades = (product: PmsProduct, legacyQuality = '') => {
+  const raw = product.translations?.zh?.gradePrices
+  if (raw) {
+    try {
+      const grades = (JSON.parse(raw) as Array<{ grade?: string; enabled?: boolean }>)
+        .filter(item => item.enabled && ['7A', '10A', '12A'].includes(item.grade || ''))
+        .map(item => item.grade!)
+      if (grades.length) return grades
+    } catch { /* Ignore malformed legacy metadata. */ }
+  }
+  const legacyMap: Record<string, string> = { 基础级: '7A', 中级: '10A', 高级: '12A' }
+  return legacyQuality ? legacyQuality.split(',').map(item => legacyMap[item.trim()]).filter(Boolean) : []
+}
 const loadFacets = (categoryId?: number): Promise<CatalogEntry[]> => {
   const queryKeyword = keyword.value
   const key = JSON.stringify([categoryId, queryKeyword])
@@ -284,9 +297,10 @@ const loadFacets = (categoryId?: number): Promise<CatalogEntry[]> => {
         const response = await getCatalogProductDetail(product.id)
         const detail = response.data
         const qualityId = detail.productAttributeList?.find(item => item.name === '品质等级')?.id
-        return { product, ...readProductSpecs(detail.skuStockList, detail.productAttributeList, detail.productAttributeValueList), quality: detail.productAttributeValueList?.find(item => item.productAttributeId === qualityId)?.value || '' }
+        const legacyQuality = detail.productAttributeValueList?.find(item => item.productAttributeId === qualityId)?.value || ''
+        return { product, ...readProductSpecs(detail.skuStockList, detail.productAttributeList, detail.productAttributeValueList), quality: readProductGrades(product, legacyQuality) }
       }))
-      results.forEach((result, index) => entries.push(result.status === 'fulfilled' ? result.value : { product: products[offset+index], colors: [], sizes: [], quality: '' }))
+      results.forEach((result, index) => entries.push(result.status === 'fulfilled' ? result.value : { product: products[offset+index], colors: [], sizes: [], quality: readProductGrades(products[offset+index]!) }))
     }
     if (request === facetRequest && key === JSON.stringify([selectedCategory.value, keyword.value])) {
       catalogEntries = entries

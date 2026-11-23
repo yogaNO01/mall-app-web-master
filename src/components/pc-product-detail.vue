@@ -10,7 +10,7 @@
         <view class="gallery" :class="{ 'has-secondary': visibleImages.length > 4, 'single-image': visibleImages.length <= 1, 'multiple-images': visibleImages.length > 1 }">
           <view v-if="visibleImages.length > 1" class="thumbs">
             <button
-              v-for="(image, index) in visibleImages.slice(0, 4)"
+              v-for="(image, index) in visibleImages"
               :key="`${image}-${index}`"
               :class="{ active: currentImage === index }"
               @click="currentImage = index"
@@ -41,6 +41,14 @@
               <button v-for="(image, index) in visibleImages" :id="`detail-thumb-${index}`" :key="index" :class="{ active: currentImage === index }" :aria-label="t(`查看第${index + 1}张商品图片`)" @click="currentImage = index"><image :src="image" mode="aspectFit" /></button>
             </view>
           </scroll-view>
+        </view>
+
+        <view class="quality-guide">
+          <image class="quality-guide-image" src="/static/product/replica-quality-guide.png" mode="aspectFit" />
+          <view class="quality-guide-copy">
+            <text>All items share the same appearance; differences in quality grade are due to variations in the materials used.</text>
+            <text>To ensure product quality and customer satisfaction, this store offers items ranging from 7A to 12A grade.</text>
+          </view>
         </view>
 
         <view v-if="recommendations.length" class="recommendations">
@@ -386,6 +394,10 @@ onBeforeUnmount(() => { recommendationRequest++ })
   .description-text { padding:20px 24px; white-space:pre-wrap; overflow-wrap:anywhere; }
   .rich-detail { max-width:900px; margin-inline:auto; overflow:hidden; border-radius:8px; background:#fff; }
   .rich-detail :deep(img) { display:block; max-width:100% !important; height:auto !important; margin-inline:auto; }
+  .quality-guide { grid-column:1 / -1; display:grid; grid-template-columns:minmax(280px,42%) minmax(0,1fr); align-items:center; gap:clamp(32px,5vw,84px); box-sizing:border-box; width:100%; min-width:0; padding:clamp(32px,4vw,64px); border:1px solid var(--detail-line); border-radius:14px; background:#fff; }
+  .quality-guide-image { display:block; width:100%; height:clamp(300px,34vw,520px); }
+  .quality-guide-copy { display:flex; flex-direction:column; gap:20px; max-width:760px; color:var(--detail-ink); font-size:clamp(18px,1.35vw,24px); line-height:1.7; }
+  .quality-guide-copy text { display:block; }
   .recommendations { grid-column:1 / -1; box-sizing:border-box; width:100%; min-width:0; padding:24px; border:1px solid var(--detail-line); border-radius:14px; }
   .section-heading { display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; color:var(--detail-ink); font-size:22px; font-weight:700; }
   .section-heading button { padding:6px 12px; border:1px solid #e2e8f0; border-radius:6px; color:var(--detail-muted); font-size:13px; font-weight:400; }
@@ -409,10 +421,15 @@ onBeforeUnmount(() => { recommendationRequest++ })
   .gallery,.gallery:not(.has-secondary) { grid-template-columns:68px minmax(0,1fr); }
   .gallery.single-image { grid-template-columns:minmax(0,1fr); }
   .thumbs.secondary { display:none; }
+  .thumbs:not(.secondary) { overflow-y: auto; }
   .purchase-card { padding:22px; }
   .purchase-panel .information-card { padding-inline:22px; }
   .primary-actions { grid-template-columns:minmax(0,1fr) 108px; }
   .product-title { font-size:22px; }
+}
+
+@media (min-width:1181px) {
+  .thumbs:not(.secondary) > button:nth-child(n + 5) { display: none; }
 }
 @media (min-width:1280px) and (max-width:2140px) {
   .recommendation-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
@@ -495,7 +512,10 @@ onBeforeUnmount(() => { recommendationRequest++ })
   .info-box { border-radius:6px; background:#f0f6fd; font-size:12px; line-height:1.8; }
   .description-text { padding:14px; }
   .rich-detail { width:100%; border-radius:5px; }
-  .recommendations { order:4; padding:24px 16px; border:0; border-top:8px solid #f6f7f8; border-radius:0; }
+  .quality-guide { order:4; display:flex; flex-direction:column; gap:20px; padding:24px 16px; border:0; border-top:8px solid #f6f7f8; border-radius:0; }
+  .quality-guide-image { width:100%; height:auto; max-height:none; }
+  .quality-guide-copy { gap:12px; color:#324b65; font-size:14px; line-height:1.7; }
+  .recommendations { order:5; padding:24px 16px; border:0; border-top:8px solid #f6f7f8; border-radius:0; }
   .section-heading { margin-bottom:20px; font-size:19px; }
   .section-heading button { padding:5px 8px; font-size:11px; }
   .recommendation-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px 12px; }

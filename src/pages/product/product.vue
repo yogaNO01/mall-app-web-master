@@ -30,13 +30,22 @@
 
     <!-- 轮播图 -->
     <view class="carousel">
-      <swiper :key="activeColorAlbumKey" indicator-dots circular :duration="400">
+      <swiper :current="galleryIndex" indicator-dots circular :duration="400" @change="galleryIndex = $event.detail.current">
         <swiper-item class="swiper-item" v-for="(item, index) in imgList" :key="index">
           <view class="image-wrapper">
             <image :src="item" class="loaded" mode="aspectFill"></image>
           </view>
         </swiper-item>
       </swiper>
+      <scroll-view v-if="imgList.length > 1" scroll-x>
+        <view class="product-gallery-thumbnails">
+          <button v-for="(item, index) in imgList" :key="item" type="button"
+            :aria-label="t(`查看第${index + 1}张商品图片`)" :aria-pressed="galleryIndex === index"
+            @click="galleryIndex = index">
+            <image :src="item" mode="aspectFit" />
+          </button>
+        </view>
+      </scroll-view>
     </view>
 
     <!-- 商品基本信息 -->
@@ -366,29 +375,14 @@ const couponState = ref(0)
 const product = ref<PmsProduct>({} as PmsProduct)
 const brand = ref<PmsBrand>({} as PmsBrand)
 const defaultImages = ref<string[]>([])
+const galleryIndex = ref(0)
 const desc = ref('')
 
 // 规格相关
 const specList = ref<PmsProductAttribute[]>([])
 const specChildList = ref<SpecOption[]>([])
 const specSelected = ref<SpecOption[]>([])
-const colorAlbums = computed<Record<string, unknown>>(() => {
-  try {
-    const data = JSON.parse(product.value.translations?.zh?.colorAlbums || '{}')
-    return data && typeof data === 'object' && !Array.isArray(data) ? data : {}
-  } catch {
-    return {}
-  }
-})
-const activeColorAlbumKey = computed(() => specSelected.value.find(option =>
-  Object.prototype.hasOwnProperty.call(colorAlbums.value, option.name),
-)?.name || '')
-const imgList = computed(() => {
-  const album = colorAlbums.value[activeColorAlbumKey.value]
-  if (!Array.isArray(album)) return defaultImages.value
-  const images = album.filter((url): url is string => typeof url === 'string' && !!url.trim()).slice(0, 10)
-  return images.length ? images : defaultImages.value
-})
+const imgList = defaultImages
 const skuStockList = ref<PmsSkuStock[]>([])
 
 // 属性、促销、服务
@@ -444,6 +438,7 @@ const loadData = async (id: number) => {
       skuStockList.value = data.skuStockList || []
       brand.value = data.brand
       defaultImages.value = []
+      galleryIndex.value = 0
       specList.value = []
       specChildList.value = []
       specSelected.value = []
@@ -941,6 +936,10 @@ page {
 
 <style lang="scss" scoped>
 @use '@/styles/home-tokens.scss' as *;
+.product-gallery-thumbnails { display: flex; gap: 8px; padding: 8px 16px; width: max-content; }
+.product-gallery-thumbnails button { flex: none; width: 54px; height: 54px; margin: 0; padding: 2px; border: 1px solid #d9e1eb; border-radius: 5px; background: #fff; }
+.product-gallery-thumbnails button[aria-pressed="true"] { border-color: #30486d; }
+.product-gallery-thumbnails image { display: block; width: 100%; height: 100%; }
 .container { width:100%; max-width:600px; min-height:100vh; margin:0 auto; overflow-x:hidden; background:#fff; color:$home-ink; font-family:'Noto Sans SC','Microsoft YaHei',sans-serif; }
 .figma-header { position:relative; z-index:1000; }
 .pc-detail { display:block; }
