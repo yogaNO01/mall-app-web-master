@@ -513,7 +513,7 @@ onBeforeUnmount(() => { recommendationRequest++ })
   .description-text { padding:14px; }
   .rich-detail { width:100%; border-radius:5px; }
   .quality-guide { order:4; display:flex; flex-direction:column; gap:20px; padding:24px 16px; border:0; border-top:8px solid #f6f7f8; border-radius:0; }
-  .quality-guide-image { width:100%; height:auto; max-height:none; }
+  .quality-guide-image { width:100%; height:calc(100vw - 32px); max-height:688px; }
   .quality-guide-copy { gap:12px; color:#324b65; font-size:14px; line-height:1.7; }
   .recommendations { order:5; padding:24px 16px; border:0; border-top:8px solid #f6f7f8; border-radius:0; }
   .section-heading { margin-bottom:20px; font-size:19px; }
