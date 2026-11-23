@@ -16,7 +16,7 @@
       <checkbox-group @change="handleBrandChange"><label v-for="brand in filterBrands" :key="brand" class="sidebar-brand"><checkbox :value="brand" :checked="selectedBrands.includes(brand)"/>{{ t(brand) }}</label></checkbox-group>
       <text class="sidebar-title">{{ t('价格区间') }}</text><view class="price-inputs"><input v-model="minPrice" :placeholder="pricePlaceholder('20')" type="number"/><input v-model="maxPrice" :placeholder="pricePlaceholder('5,000')" type="number"/></view>
       <text v-if="priceRangeError" class="filter-error">{{ t(priceRangeError) }}</text>
-      <text class="sidebar-title">{{ t('颜色') }}</text><view class="filter-colors"><button v-for="color in availableColors" :key="color.color" :class="{ selected: selectedColors.includes(color.color) }" :style="{ backgroundColor: color.color }" :title="t(`${localized(color, 'name')} ${color.color}`)" :aria-label="localized(color, 'name')" :aria-pressed="selectedColors.includes(color.color)" @click="toggleColor(color.color)" /></view>
+      <text class="sidebar-title">{{ t('颜色') }}</text><view class="filter-colors"><button v-for="color in availableColors" :key="color.name" :class="{ selected: selectedColors.includes(color.name) }" :aria-label="localized(color, 'name')" :aria-pressed="selectedColors.includes(color.name)" @click="toggleColor(color.name)">{{ localized(color, 'name') }}</button></view>
       <text class="sidebar-title">{{ t('品质等级') }}</text><view class="quality-list"><button v-for="item in ['7A','10A','12A']" :key="item" :class="{active:quality===item}" @click="quality=item">{{ item }}</button></view>
       <text class="sidebar-title">{{ t('尺码/规格') }}</text><view class="filter-sizes"><text v-if="!selectedCategory">{{ t('请先选择分类') }}</text><button v-for="size in availableSizes" :key="size" :class="{ selected: selectedSizes.includes(size) }" @click="toggleSize(size)">{{ sizeLabel(size) }}</button></view>
     </view>
@@ -26,7 +26,7 @@
     <view class="pc-catalog-tools"><storefront-search v-model="searchDraft" class="catalog-search-field" compact submit-on-clear @search="submitSearch" /></view>
     <view v-if="keyword" class="search-summary"><text>{{ t('“{keyword}”的搜索结果', { keyword }) }}</text><button @click="clearSearch">{{ t('清空搜索') }}</button></view>
     <view v-if="activeFilterChips.length" class="active-filters"><button v-for="chip in activeFilterChips" :key="chip.id" @click="removeFilterChip(chip)">{{ t(chip.label) }} <text>×</text></button><button class="clear-all-filters" @click="resetFilters">{{ t('清空筛选') }}</button></view>
-    <view v-if="!productsLoading && !productsError" class="product-grid" :class="{ 'list-layout': listLayout }"><home-product-card v-for="item in productList" :key="item.id" :product="item" color-asset="/static/home/126cc.svg" variant="catalog" hide-mobile-consult-icon :preferred-grade="quality" hide-grade-picker @detail="openDetail" @consult="openContact" /></view>
+    <view v-if="!productsLoading && !productsError" class="product-grid" :class="{ 'list-layout': listLayout }"><home-product-card v-for="item in productList" :key="item.id" :product="item" variant="catalog" hide-mobile-consult-icon :preferred-grade="quality" hide-grade-picker @detail="openDetail" @consult="openContact" /></view>
     <view v-if="totalPages > 1" class="mobile-pagination"><button :disabled="currentPage === 1 || productsLoading" @click="goPage(currentPage - 1)">{{ t('上一页') }}</button><template v-for="(page, index) in pageItems" :key="index"><text v-if="page === '…'">…</text><button v-else :class="{ active: currentPage === page }" :disabled="productsLoading" :aria-current="currentPage === page ? 'page' : undefined" @click="goPage(page)">{{ t(page) }}</button></template><button :disabled="currentPage === totalPages || productsLoading" @click="goPage(currentPage + 1)">{{ t('下一页') }}</button></view>
     <view v-if="productsLoading" class="empty-state" role="status" aria-live="polite">{{ t('正在查找商品…') }}</view><view v-else-if="productsError" class="empty-state"><text>{{ t('商品加载失败') }}</text><button @click="loadProducts(currentPage)">{{ t('重新加载') }}</button></view><view v-else-if="!productList.length" class="empty-state"><text>{{ t(keyword ? `没有找到“${keyword}”相关商品` : '暂无匹配商品') }}</text><text class="empty-hint">{{ t('试试其他商品名称、品牌或货号，或调整筛选条件') }}</text><view class="empty-actions"><button v-if="keyword" @click="clearSearch">{{ t('清空搜索') }}</button><button @click="resetFilters">{{ t('重置筛选') }}</button></view></view>
     </view>
@@ -48,7 +48,7 @@
           </view>
           <view class="filter-section">
             <text class="filter-title">{{ t('颜色') }}<text class="filter-section-hint">{{ t('可多选') }}</text></text>
-            <view class="filter-colors"><button v-for="color in availableColors" :key="color.color" :class="{ selected: selectedColors.includes(color.color) }" :style="{ backgroundColor: color.color }" :title="t(`${localized(color, 'name')} ${color.color}`)" :aria-label="localized(color, 'name')" :aria-pressed="selectedColors.includes(color.color)" @click="toggleColor(color.color)" /></view>
+            <view class="filter-colors"><button v-for="color in availableColors" :key="color.name" :class="{ selected: selectedColors.includes(color.name) }" :aria-label="localized(color, 'name')" :aria-pressed="selectedColors.includes(color.name)" @click="toggleColor(color.name)">{{ localized(color, 'name') }}</button></view>
           </view>
           <view class="filter-section">
             <text class="filter-title">{{ t('尺码/规格') }}</text>
@@ -78,8 +78,8 @@
 .filter-heading-actions { display:flex; align-items:center; }
 .filter-description,.filter-section-hint,.desktop-clear-filter,.filter-selection-summary,.price-separator { display:none; }
 .filter-colors,.filter-sizes { display:flex; flex-wrap:wrap; gap:10px; }
-.category-page .filter-colors button { flex:none; width:30px; height:30px; margin:0; padding:0; border:1px solid #b8c4d0; border-radius:50%; }
-.category-page .filter-colors button.selected { outline:2px solid #244e76; outline-offset:3px; }
+.category-page .filter-colors button { min-height:32px; margin:0; padding:4px 10px; border:1px solid #dbe4ed; border-radius:6px; color:#244e76; font-size:13px; line-height:20px; white-space:normal; overflow-wrap:anywhere; }
+.category-page .filter-colors button.selected { border-color:#244e76; background:#244e76; color:#fff; }
 .category-page .filter-sizes button { min-width:42px; margin:0; padding:5px 9px; border:1px solid #dce4ed; border-radius:5px; background:#fff; color:#244e76; font-size:12px; line-height:24px; }
 .category-page .filter-sizes button.selected { border-color:#244e76; background:#244e76; color:#fff; }
 .mobile-sort-tabs,.mobile-layout-options,.mobile-pagination { display:none; }
@@ -246,7 +246,7 @@ const priceRangeError = computed(() => validatePriceRange(minPrice.value,maxPric
 type FilterChip = { id:string; kind:string; value:string; label:string }
 const activeFilterChips = computed<FilterChip[]>(() => [
   ...selectedBrands.value.map(value => ({id:'brand:'+value,kind:'brand',value,label:value})),
-  ...selectedColors.value.map(value => ({id:'color:'+value,kind:'color',value,label:localized(availableColors.value.find(color => color.color === value), 'name') || value})),
+  ...selectedColors.value.map(value => ({id:'color:'+value,kind:'color',value,label:localized(availableColors.value.find(color => color.name === value), 'name') || value})),
   ...selectedSizes.value.map(value => ({id:'size:'+value,kind:'size',value,label:'尺码 '+value})),
   ...(quality.value ? [{id:'quality',kind:'quality',value:quality.value,label:quality.value}] : []),
   ...(minPrice.value || maxPrice.value ? [{id:'price',kind:'price',value:'',label:t('价格 {min} — {max}', { min: minPrice.value ? `${currencySymbol()} ${minPrice.value}` : `${currencySymbol()} 0`, max: maxPrice.value ? `${currencySymbol()} ${maxPrice.value}` : t('不限') })}] : []),
@@ -307,7 +307,7 @@ const loadFacets = (categoryId?: number): Promise<CatalogEntry[]> => {
       loadedKey = key
       catalogLoadedAt = Date.now()
       filterBrands.value = [...new Set(products.map(p => p.brandName).filter(Boolean))]
-      availableColors.value = [...new Map(entries.flatMap(entry => entry.colors).map(color => [color.color, color])).values()]
+      availableColors.value = [...new Map(entries.flatMap(entry => entry.colors).map(color => [color.name, color])).values()]
       availableSizes.value = categoryId ? [...new Set(entries.flatMap(entry => entry.sizes))] : []
       availableSizeTranslations.value = Object.assign({}, ...entries.map(entry => entry.sizeTranslations || {}))
     }
@@ -625,7 +625,7 @@ function refreshCategories():Promise<void> {
   .filter-option :deep(.uni-checkbox-input svg) { width:12px; height:12px; }
   .filter-option.selected :deep(.uni-checkbox-input path) { fill:#fff; }
   .category-page .filter-drawer .filter-colors { align-items:center; gap:13px; min-height:38px; padding-inline:4px; }
-  .category-page .filter-drawer .filter-colors button { width:28px; height:28px; border-color:rgba(32,59,88,.18); }
+  .category-page .filter-drawer .filter-colors button { min-height:38px; }
   .category-page .filter-drawer .filter-sizes { gap:8px; align-items:center; min-height:38px; }
   .category-page .filter-drawer .filter-sizes button { min-width:40px; height:36px; padding:0 10px; font-size:13px; line-height:34px; }
   .category-page .filter-drawer .filter-sizes button:hover { border-color:#244e76; }

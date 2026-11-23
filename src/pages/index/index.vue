@@ -10,8 +10,8 @@
     </view>
     <view class="hero">
       <view class="hero-image-slot">
-        <image class="hero-image hero-image-mobile" src="/static/home/h5-banner.svg" mode="widthFix" />
-        <image class="hero-image hero-image-pc" src="/static/home/aboutUs_pc.svg" />
+        <image class="hero-image hero-image-mobile" src="/static/home/h5-banner.svg?v=20261124" mode="widthFix" />
+        <image class="hero-image hero-image-pc" src="/static/home/aboutUs_pc.svg?v=20261124" />
       </view>
       <view class="hero-copy"
         ><text class="hero-eyebrow">{{ t('EVERYDAY STYLE · 2026') }}</text
@@ -56,10 +56,9 @@
       >
       <view v-else-if="newProductList.length" class="product-grid">
         <home-product-card
-          v-for="(product, index) in newProductList"
+          v-for="product in newProductList"
           :key="product.id"
           :product="product"
-          :color-asset="colorAssets[index % colorAssets.length]"
           hide-mobile-consult-icon
           @detail="openProduct"
           @consult="consultProduct"
@@ -220,12 +219,6 @@ const menuOpen = ref(false)
 const contactOpen = ref(false)
 const aboutOpen = ref(false)
 const consultedProduct = ref<PmsProduct | null>(null)
-const colorAssets = [
-  '/static/home/126cc.svg',
-  '/static/home/b34f4.svg',
-  '/static/home/7c31f.svg',
-  '/static/home/126cc.svg',
-]
 const contacts = [
   { id: 'whatsapp-1', label: 'WhatsApp 1', value: 'https://wa.me/message/L6BPFOED5EWPL1', icon: '/static/home/a2edb.svg' },
   { id: 'whatsapp-2', label: 'WhatsApp 2', value: 'http://wa.me/message/YCW3AKETHQVYM1', icon: '/static/home/a2edb.svg' },

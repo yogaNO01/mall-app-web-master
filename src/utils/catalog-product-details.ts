@@ -44,13 +44,13 @@ export const readProductSpecs = (skus: { spData: string; stock?:number; lockStoc
           const color = parseProductColor(spec.value)
           const translated = optionTranslation(spec.key, spec.value)
           if (translated) color.translations = translated
-          colors.set(spec.value, color)
+          if (color.name && !/^#[0-9a-f]{6}$/i.test(color.name)) colors.set(color.name, color)
+          variant.color = color.name
         } else if (/尺码|尺寸|规格|size/i.test(spec.key)) {
           sizes.add(String(spec.value))
           const translated = optionTranslation(spec.key, spec.value)
           if (translated) sizeTranslations[String(spec.value)] = translated
         }
-        if (isColorSpec(spec.key)) variant.color = parseProductColor(spec.value).color
         if (/尺码|尺寸|规格|size/i.test(spec.key)) variant.size = String(spec.value)
       }
       variants.push(variant)

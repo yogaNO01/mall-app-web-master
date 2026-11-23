@@ -61,8 +61,6 @@
               v-for="item in recommendations"
               :key="item.id"
               :product="item"
-              color-asset="/static/home/126cc.svg"
-              :show-color-preview="false"
               hide-mobile-consult-icon
               variant="catalog"
               @detail="openProduct"
@@ -140,7 +138,7 @@
                 :aria-pressed="!!option.selected"
                 :disabled="!isSkuOptionAvailable(option, specOptions, skus)"
                 @click="selectSpec(option)"
-              ><text v-if="isColorSpec(spec.name)" class="spec-color-dot" :style="{ backgroundColor: parseProductColor(option.name).color }" />{{ displayOption(spec, option.name) }}</button>
+              >{{ displayOption(spec, option.name) }}</button>
             </view>
           </view>
 
@@ -178,7 +176,7 @@ import DetailCollapse from '@/components/detail-collapse.vue'
 import { searchProductListAPI } from '@/apis/product'
 import { productGrades, selectGrade, pricedProduct } from '@/utils/product-grades'
 import { consultOnWhatsApp } from '@/utils/whatsapp'
-import { isColorSpec, parseProductColor } from '@/utils/product-colors'
+import { isColorSpec } from '@/utils/product-colors'
 import type { PmsProduct, PmsProductAttribute, PmsSkuStock, SpecOption } from '@/types/product'
 import { availableSkuStock, findSelectedSku, isSkuOptionAvailable } from '@/utils/sku-selection'
 import { copyText } from '@/utils/clipboard'
@@ -303,7 +301,6 @@ onBeforeUnmount(() => { recommendationRequest++ })
 .spec-option:disabled { opacity:.4; cursor:not-allowed; text-decoration:line-through; }
 .consult-mobile-label { display:none; }
 .stepper button:disabled,.consult:disabled { opacity:.45; cursor:not-allowed; box-shadow:none; }
-.spec-color-dot { display:inline-block; width:20px; height:20px; flex:none; border:1px solid #b9c4d1; border-radius:50%; }
 .color-spec-option { display:inline-flex; align-items:center; gap:8px; }
 .mobile-gallery-swiper,.mobile-thumbnails,.mobile-image-count { display:none; }
 

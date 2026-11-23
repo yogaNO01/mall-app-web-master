@@ -18,7 +18,7 @@ export const filterCatalog = (entries: CatalogEntry[], filters: CatalogFilters) 
     const originalPrice = productAmount(p, 'originalPrice')
     return (
     (!filters.brands.length || filters.brands.includes(p.brandName)) &&
-    (!filters.colors.length || colors.some(color => filters.colors.includes(color.color))) &&
+    (!filters.colors.length || colors.some(color => filters.colors.includes(color.name))) &&
     (!filters.sizes.length || sizes.some(size => filters.sizes.includes(size))) &&
     (!(filters.colors.length && filters.sizes.length && variants?.length) || variants.some(variant => filters.colors.includes(variant.color || '') && filters.sizes.includes(variant.size || '') && variant.stock > 0)) &&
     (!filters.min || (price != null && price >= Number(filters.min))) &&

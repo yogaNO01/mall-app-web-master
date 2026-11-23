@@ -27,7 +27,7 @@
         <view v-if="!productList.length && loadingType === 'loading'" class="brand-product-grid" :aria-label="t('商品加载中')"><view v-for="n in 4" :key="n" class="product-skeleton" /></view>
         <view v-else-if="!productList.length && !productsError" class="empty-state"><text>{{ t('该品牌暂无商品') }}</text><button @click="goProducts">{{ t('浏览全部商品') }}</button></view>
         <view v-else class="brand-product-grid">
-          <home-product-card v-for="item in productList" :key="item.id" :product="item" color-asset="" :show-color-preview="false" variant="catalog" @detail="handleNavToDetail" />
+          <home-product-card v-for="item in productList" :key="item.id" :product="item" variant="catalog" @detail="handleNavToDetail" />
         </view>
         <button class="mobile-brand-more" @click="goProducts">{{ t('全部商品') }} ›</button>
         <view class="load-state" aria-live="polite">
