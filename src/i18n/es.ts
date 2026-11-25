@@ -1,5 +1,6 @@
 // Spanish storefront copy. Chinese source keys are stable.
 export const spanish: Record<string, string> = {
+  "按品牌、价格和品质等级筛选": "Filtra por marca, precio y nivel de calidad",
   "美国": "Estados Unidos",
   "欧洲": "Europa",
   "配送地区": "Zona de entrega",

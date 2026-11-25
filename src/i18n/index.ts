@@ -2,17 +2,19 @@ import { ref } from 'vue'
 import { portuguese } from './pt'
 import { english } from './languages'
 import { spanish } from './es'
+import { italian, french } from './it-fr'
 
-export type StorefrontLocale = 'zh' | 'en' | 'pt' | 'es'
+export type StorefrontLocale = 'zh' | 'en' | 'pt' | 'es' | 'it' | 'fr'
 export type ContentTranslations = Partial<Record<StorefrontLocale, Record<string, string>>>
 const STORAGE_KEY = 'mall-storefront-locale'
 export const organizationName = '中国广州商品进出口贸易总会'
 const savedLocale = () => {
-  try { const saved = uni.getStorageSync(STORAGE_KEY); return ['zh','en','pt','es'].includes(saved) ? saved : 'en' } catch { return 'en' }
+  try { const saved = uni.getStorageSync(STORAGE_KEY); return ['zh','en','pt','es','it','fr'].includes(saved) ? saved : 'en' } catch { return 'en' }
 }
 export const locale = ref<StorefrontLocale>(savedLocale())
 const entityNames = ref<Record<string, Partial<Record<StorefrontLocale, string>>>>({})
-const dictionary = () => locale.value === 'en' ? english : locale.value === 'es' ? spanish : portuguese
+const storefrontCopy = ref<Record<string, Partial<Record<'it' | 'fr', string>>>>({})
+const dictionary = () => locale.value === 'it' ? italian : locale.value === 'fr' ? french : locale.value === 'en' ? english : locale.value === 'es' ? spanish : portuguese
 export function registerLocaleEntities(records: unknown) {
   if (!Array.isArray(records)) return
   const next = { ...entityNames.value }
@@ -20,7 +22,7 @@ export function registerLocaleEntities(records: unknown) {
     for (const value of items) {
       if (!value || typeof value !== 'object') continue
       const item = value as { name?: string; translations?: ContentTranslations; children?: unknown[] }
-      if (item.name) next[item.name] = Object.fromEntries(['en','pt','es'].map(lang => [lang,item.translations?.[lang as StorefrontLocale]?.name || '']))
+      if (item.name) next[item.name] = Object.fromEntries(['en','pt','es','it','fr'].map(lang => [lang,item.translations?.[lang as StorefrontLocale]?.name || '']))
       if (item.children) read(item.children)
     }
   }
@@ -38,13 +40,14 @@ const patterns = Object.keys(portuguese).filter(key => /\{\w+\}/.test(key)).map(
 /** Translate UI copy, without touching canonical SKU values or request parameters. */
 export function t(source: unknown, values: Record<string, unknown> = {}): string {
   const key = source == null ? '' : String(source)
-  if (key === organizationName) return locale.value === 'zh' ? key : locale.value === 'pt' ? 'Associação de Comércio Global de Guangzhou' : locale.value === 'es' ? 'Asociación Global de Comercio de Guangzhou' : 'Guangzhou Global Trade Association'
-  let result = (locale.value !== 'zh' ? dictionary()[key] : key) || key
+  if ((locale.value === 'it' || locale.value === 'fr') && storefrontCopy.value[key]?.[locale.value]) return storefrontCopy.value[key][locale.value]!
+  if (key === organizationName && locale.value !== 'it' && locale.value !== 'fr') return locale.value === 'zh' ? key : locale.value === 'pt' ? 'Associação de Comércio Global de Guangzhou' : locale.value === 'es' ? 'Asociación Global de Comercio de Guangzhou' : 'Guangzhou Global Trade Association'
+  let result = (locale.value !== 'zh' ? dictionary()[key] || english[key] : key) || key
   if (locale.value !== 'zh' && result === key) {
     for (const pattern of patterns) {
       const match = key.match(pattern.expression)
       if (match) {
-        result = (dictionary()[pattern.key] || key).replace(/\{(\w+)\}/g, (_, name) => t(match[pattern.names.indexOf(name) + 1]))
+        result = (dictionary()[pattern.key] || english[pattern.key] || key).replace(/\{(\w+)\}/g, (_, name) => t(match[pattern.names.indexOf(name) + 1]))
         break
       }
     }
@@ -83,13 +86,19 @@ export function localizedOption(record: unknown, value: string): string {
 export function setLocale(value: StorefrontLocale) {
   locale.value = value
   try { uni.setStorageSync(STORAGE_KEY, value) } catch { /* A session can still switch languages without storage. */ }
-  if (typeof document !== 'undefined') document.documentElement.lang = value === 'zh' ? 'zh-CN' : value === 'pt' ? 'pt-BR' : value === 'es' ? 'es' : 'en'
+  if (typeof document !== 'undefined') document.documentElement.lang = value === 'zh' ? 'zh-CN' : value === 'pt' ? 'pt-BR' : value
 }
 
 let lookupsLoaded = false
 export async function loadStorefrontCopy() {
   if (!lookupsLoaded) {
     lookupsLoaded = true
+    uni.request({ url: '/home/translations', success: response => {
+      const result = response.data as { code?: number; data?: { source: string; it?: string; fr?: string }[] }
+      if (result.code === 200 && Array.isArray(result.data)) {
+        storefrontCopy.value = Object.fromEntries(result.data.map(({ source, it, fr }) => [source, { it: it?.trim(), fr: fr?.trim() }]))
+      }
+    } })
     for (const url of ['/brand/recommendList?pageNum=1&pageSize=100', '/product/categoryTreeList']) uni.request({ url, success: response => {
       const result = response.data as { code?: number; data?: unknown[] }
       if (result.code === 200) registerLocaleEntities(result.data)

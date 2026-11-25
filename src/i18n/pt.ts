@@ -1,5 +1,6 @@
 /** Portuguese used by the storefront. Chinese text is the stable source key. */
 export const portuguese: Record<string, string> = {
+  "按品牌、价格和品质等级筛选": "Filtre por marca, preço e nível de qualidade",
   '美国':'Estados Unidos','欧洲':'Europa','配送地区':'Região de entrega','运费':'Frete',
   'ABOUT US':'SOBRE NÓS','SHOPPING GUIDE':'COMO COMPRAR','EXPLORE BRANDS':'EXPLORE AS MARCAS','FAQ':'PERGUNTAS FREQUENTES','EVERYDAY STYLE · 2026':'ESTILO PARA TODOS OS DIAS · 2026',
   '首页':'Início','全部商品':'Todos os produtos','关于我们':'Sobre nós','商品分类列表':'Categorias de produtos',

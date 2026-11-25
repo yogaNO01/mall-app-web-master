@@ -1,5 +1,6 @@
 /** Storefront English copy; Chinese source keys remain stable. */
 export const english: Record<string,string> = {
+  "按品牌、价格和品质等级筛选": "Filter by brand, price and quality grade",
   '美国':'United States','欧洲':'Europe','配送地区':'Delivery region','运费':'Shipping',
   "首页": "Home",
   "全部商品": "All products",
