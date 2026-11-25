@@ -4,7 +4,7 @@ import type { ContentTranslations } from '@/i18n'
 import { marketProductAmount as productAmount } from '@/utils/money'
 
 export type CatalogEntry = { product: PmsProduct; colors: ProductColor[]; sizes: string[]; quality: string[]; variants?: {color?:string;size?:string;stock:number}[]; sizeTranslations?: Record<string, ContentTranslations> }
-export type CatalogFilters = { brands: string[]; colors: string[]; sizes: string[]; min: string; max: string; quality: string; keyword: string; sort: number; discount: boolean }
+export type CatalogFilters = { brands: string[]; min: string; max: string; quality: string; keyword: string; sort: number; discount: boolean }
 export const validatePriceRange = (min:string,max:string) => {
   if ([min,max].some(value => value.trim() && (!Number.isFinite(Number(value)) || Number(value) < 0))) return '请输入有效的非负价格'
   if (min.trim() && max.trim() && Number(min) > Number(max)) return '最低价不能高于最高价'
@@ -13,14 +13,11 @@ export const validatePriceRange = (min:string,max:string) => {
 export const filterCatalog = (entries: CatalogEntry[], filters: CatalogFilters) => {
   if (validatePriceRange(filters.min, filters.max)) return []
   const keyword = filters.keyword.trim().toLowerCase()
-  const result = entries.filter(({ product: p, colors, sizes, quality,variants }) => {
+  const result = entries.filter(({ product: p, quality }) => {
     const price = productAmount(p, 'price')
     const originalPrice = productAmount(p, 'originalPrice')
     return (
     (!filters.brands.length || filters.brands.includes(p.brandName)) &&
-    (!filters.colors.length || colors.some(color => filters.colors.includes(color.name))) &&
-    (!filters.sizes.length || sizes.some(size => filters.sizes.includes(size))) &&
-    (!(filters.colors.length && filters.sizes.length && variants?.length) || variants.some(variant => filters.colors.includes(variant.color || '') && filters.sizes.includes(variant.size || '') && variant.stock > 0)) &&
     (!filters.min || (price != null && price >= Number(filters.min))) &&
     (!filters.max || (price != null && price <= Number(filters.max))) &&
     (!filters.quality || quality.includes(filters.quality)) &&

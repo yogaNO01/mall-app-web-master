@@ -5,7 +5,7 @@
     <view class="category-hero">
       <image class="catalog-mobile-banner" src="/static/category/catalog-banner-mobile.svg" mode="aspectFit" />
       <view class="catalog-desktop-banner">
-        <view v-if="locale === 'pt' || locale === 'es'" class="category-banner-pt"><view class="category-banner-copy"><text class="category-banner-title">{{ t('探索全品类') }}</text><text class="category-banner-description">{{ t('从日常穿搭到精致配饰，发现属于你的品质好物') }}</text></view></view>
+        <view v-if="['pt', 'es', 'it', 'fr'].includes(locale)" class="category-banner-pt"><view class="category-banner-copy"><text class="category-banner-title">{{ t('探索全品类') }}</text><text class="category-banner-description">{{ t('从日常穿搭到精致配饰，发现属于你的品质好物') }}</text></view></view>
         <image v-else class="banner-pc" src="/static/category/banner-pc.png" mode="aspectFit" />
       </view>
     </view>
@@ -16,9 +16,7 @@
       <checkbox-group @change="handleBrandChange"><label v-for="brand in filterBrands" :key="brand" class="sidebar-brand"><checkbox :value="brand" :checked="selectedBrands.includes(brand)"/>{{ t(brand) }}</label></checkbox-group>
       <text class="sidebar-title">{{ t('价格区间') }}</text><view class="price-inputs"><input v-model="minPrice" :placeholder="pricePlaceholder('20')" type="number"/><input v-model="maxPrice" :placeholder="pricePlaceholder('5,000')" type="number"/></view>
       <text v-if="priceRangeError" class="filter-error">{{ t(priceRangeError) }}</text>
-      <text class="sidebar-title">{{ t('颜色') }}</text><view class="filter-colors"><button v-for="color in availableColors" :key="color.name" :class="{ selected: selectedColors.includes(color.name) }" :aria-label="localized(color, 'name')" :aria-pressed="selectedColors.includes(color.name)" @click="toggleColor(color.name)">{{ localized(color, 'name') }}</button></view>
       <text class="sidebar-title">{{ t('品质等级') }}</text><view class="quality-list"><button v-for="item in ['7A','10A','12A']" :key="item" :class="{active:quality===item}" @click="quality=item">{{ item }}</button></view>
-      <text class="sidebar-title">{{ t('尺码/规格') }}</text><view class="filter-sizes"><text v-if="!selectedCategory">{{ t('请先选择分类') }}</text><button v-for="size in availableSizes" :key="size" :class="{ selected: selectedSizes.includes(size) }" @click="toggleSize(size)">{{ sizeLabel(size) }}</button></view>
     </view>
     <view class="catalog-main">
     <view class="category-nav"><button :class="{ active: !selectedCategory }" @click="selectCategory()">{{ t('全部') }}</button><button v-for="item in categoryList" :key="item.id" :class="{ active: selectedCategory === item.id }" @click="selectCategory(item.id)">{{ localized(item, 'name') }}</button></view>
@@ -35,7 +33,7 @@
     <view v-if="filterOpen" v-modal-scroll-lock class="filter-overlay" @click="filterOpen = false">
       <view class="filter-drawer" role="dialog" aria-modal="true" :aria-label="t('筛选商品')" @click.stop>
         <view class="filter-heading">
-          <view class="filter-heading-copy"><text>{{ t('筛选商品') }}</text><text class="filter-description">{{ t('找到适合你的品牌、颜色与规格') }}</text></view>
+          <view class="filter-heading-copy"><text>{{ t('筛选商品') }}</text><text class="filter-description">{{ t('按品牌、价格和品质等级筛选') }}</text></view>
           <view class="filter-heading-actions">
             <button class="filter-close" :aria-label="t('关闭筛选')" @click="filterOpen = false"><text class="filter-close-label">{{ t('关闭') }} </text><text class="filter-close-symbol">×</text></button>
             <button class="clear-filter desktop-clear-filter" @click="resetFilters">{{ t('清除全部') }}</button>
@@ -45,14 +43,6 @@
           <view class="filter-section filter-brand-section">
             <text class="filter-title">{{ t('品牌') }}<text class="filter-section-hint">{{ t('可多选') }}</text></text>
             <checkbox-group class="filter-brand-options" @change="handleBrandChange"><label v-for="brand in filterBrands" :key="brand" class="filter-option" :class="{ selected: selectedBrands.includes(brand) }"><checkbox :value="brand" :checked="selectedBrands.includes(brand)" /><text>{{ t(brand) }}</text></label></checkbox-group>
-          </view>
-          <view class="filter-section">
-            <text class="filter-title">{{ t('颜色') }}<text class="filter-section-hint">{{ t('可多选') }}</text></text>
-            <view class="filter-colors"><button v-for="color in availableColors" :key="color.name" :class="{ selected: selectedColors.includes(color.name) }" :aria-label="localized(color, 'name')" :aria-pressed="selectedColors.includes(color.name)" @click="toggleColor(color.name)">{{ localized(color, 'name') }}</button></view>
-          </view>
-          <view class="filter-section">
-            <text class="filter-title">{{ t('尺码/规格') }}</text>
-            <view class="filter-sizes"><text v-if="!selectedCategory">{{ t('请先选择分类') }}</text><text v-else-if="!availableSizes.length">{{ t('此分类暂无可选尺码/规格') }}</text><button v-for="size in availableSizes" :key="size" :class="{ selected: selectedSizes.includes(size) }" :aria-pressed="selectedSizes.includes(size)" @click="toggleSize(size)">{{ sizeLabel(size) }}</button></view>
           </view>
           <view class="filter-section">
             <text class="filter-title">{{ t('价格区间') }}</text>
@@ -77,11 +67,6 @@
 .filter-section,.filter-heading-copy { display:flex; flex-direction:column; min-width:0; flex-shrink:0; }
 .filter-heading-actions { display:flex; align-items:center; }
 .filter-description,.filter-section-hint,.desktop-clear-filter,.filter-selection-summary,.price-separator { display:none; }
-.filter-colors,.filter-sizes { display:flex; flex-wrap:wrap; gap:10px; }
-.category-page .filter-colors button { min-height:32px; margin:0; padding:4px 10px; border:1px solid #dbe4ed; border-radius:6px; color:#244e76; font-size:13px; line-height:20px; white-space:normal; overflow-wrap:anywhere; }
-.category-page .filter-colors button.selected { border-color:#244e76; background:#244e76; color:#fff; }
-.category-page .filter-sizes button { min-width:42px; margin:0; padding:5px 9px; border:1px solid #dce4ed; border-radius:5px; background:#fff; color:#244e76; font-size:12px; line-height:24px; }
-.category-page .filter-sizes button.selected { border-color:#244e76; background:#244e76; color:#fff; }
 .mobile-sort-tabs,.mobile-layout-options,.mobile-pagination { display:none; }
 .category-page .search-area { display:block; height:auto; padding:0; background:transparent; }
 .catalog-search-field { width:100%; }
@@ -203,7 +188,7 @@
 </style>
 
 <script setup lang="ts">
-import { t, localized, locale, type ContentTranslations } from '@/i18n'
+import { t, localized, locale } from '@/i18n'
 
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -224,20 +209,13 @@ import { onLoad, onShow, onPullDownRefresh } from '@dcloudio/uni-app'
 import { getCategoryTreeAPI, searchProductListAPI } from '@/apis/product'
 import { clearCatalogProductCache, getCatalogProductDetail, readProductSpecs } from '@/utils/catalog-product-details'
 import { filterCatalog, validatePriceRange, type CatalogEntry } from '@/utils/filter-catalog'
-import type { ProductColor } from '@/utils/product-colors'
 import { currencySymbol, market, activeExchangeRates } from '@/utils/money'
 import HomeProductCard from '@/components/home-product-card.vue'
 import H5SiteHeader from '@/components/h5-site-header.vue'
 import type { CategoryTreeNode, PmsProduct } from '@/types/product'
 const categoryList = ref<CategoryTreeNode[]>([]); const productList = ref<PmsProduct[]>([]); const selectedCategory = ref<number>(); const sort = ref(0); const total = ref(0); const menuOpen = ref(false); const filterOpen = ref(false); const contactOpen = ref(false); const consultedProduct = ref<PmsProduct>()
 const filterBrands = ref<string[]>([])
-const availableColors = ref<ProductColor[]>([])
-const availableSizes = ref<string[]>([])
-const availableSizeTranslations = ref<Record<string, ContentTranslations>>({})
-const sizeLabel = (value: string) => localized({ name: value, translations: availableSizeTranslations.value[value] }, 'name')
 const selectedBrands = ref<string[]>([])
-const selectedColors = ref<string[]>([])
-const selectedSizes = ref<string[]>([])
 const minPrice = ref('')
 const maxPrice = ref('')
 const pricePlaceholder = (value: string) => `${currencySymbol()} ${value}`
@@ -246,16 +224,12 @@ const priceRangeError = computed(() => validatePriceRange(minPrice.value,maxPric
 type FilterChip = { id:string; kind:string; value:string; label:string }
 const activeFilterChips = computed<FilterChip[]>(() => [
   ...selectedBrands.value.map(value => ({id:'brand:'+value,kind:'brand',value,label:value})),
-  ...selectedColors.value.map(value => ({id:'color:'+value,kind:'color',value,label:localized(availableColors.value.find(color => color.name === value), 'name') || value})),
-  ...selectedSizes.value.map(value => ({id:'size:'+value,kind:'size',value,label:'尺码 '+value})),
   ...(quality.value ? [{id:'quality',kind:'quality',value:quality.value,label:quality.value}] : []),
   ...(minPrice.value || maxPrice.value ? [{id:'price',kind:'price',value:'',label:t('价格 {min} — {max}', { min: minPrice.value ? `${currencySymbol()} ${minPrice.value}` : `${currencySymbol()} 0`, max: maxPrice.value ? `${currencySymbol()} ${maxPrice.value}` : t('不限') })}] : []),
   ...(discountOnly.value ? [{id:'discount',kind:'discount',value:'',label:'折扣商品'}] : []),
 ])
 const removeFilterChip = (chip:FilterChip) => {
   if (chip.kind === 'brand') selectedBrands.value = selectedBrands.value.filter(value => value !== chip.value)
-  if (chip.kind === 'color') selectedColors.value = selectedColors.value.filter(value => value !== chip.value)
-  if (chip.kind === 'size') selectedSizes.value = selectedSizes.value.filter(value => value !== chip.value)
   if (chip.kind === 'quality') quality.value = ''
   if (chip.kind === 'price') { minPrice.value = '';maxPrice.value = '' }
   if (chip.kind === 'discount') discountOnly.value = false
@@ -307,9 +281,6 @@ const loadFacets = (categoryId?: number): Promise<CatalogEntry[]> => {
       loadedKey = key
       catalogLoadedAt = Date.now()
       filterBrands.value = [...new Set(products.map(p => p.brandName).filter(Boolean))]
-      availableColors.value = [...new Map(entries.flatMap(entry => entry.colors).map(color => [color.name, color])).values()]
-      availableSizes.value = categoryId ? [...new Set(entries.flatMap(entry => entry.sizes))] : []
-      availableSizeTranslations.value = Object.assign({}, ...entries.map(entry => entry.sizeTranslations || {}))
     }
     return entries
   })()
@@ -318,9 +289,7 @@ const loadFacets = (categoryId?: number): Promise<CatalogEntry[]> => {
   return promise
 }
 const handleBrandChange = (event: { detail: { value: string[] } }) => { selectedBrands.value = event.detail.value }
-const toggleColor = (color: string) => { selectedColors.value = selectedColors.value.includes(color) ? selectedColors.value.filter(item => item !== color) : [...selectedColors.value, color] }
-const toggleSize = (size: string) => { selectedSizes.value = selectedSizes.value.includes(size) ? selectedSizes.value.filter(item => item !== size) : [...selectedSizes.value, size] }
-const resetFilters = () => { selectedBrands.value = []; selectedColors.value = []; selectedSizes.value = []; minPrice.value = ''; maxPrice.value = ''; quality.value = ''; discountOnly.value = false }
+const resetFilters = () => { selectedBrands.value = []; minPrice.value = ''; maxPrice.value = ''; quality.value = ''; discountOnly.value = false }
 const applyFilters = () => { if (priceRangeError.value) return uni.showToast({title:t(priceRangeError.value),icon:'none'});filterOpen.value = false; void loadProducts() }
 const currentPage = ref(1)
 const totalPages = ref(0)
@@ -346,7 +315,7 @@ const loadProducts = async (page = 1) => {
   try {
     const entries = await loadFacets(selectedCategory.value)
     if (request !== productRequest) return
-    const products = filterCatalog(entries, { brands: selectedBrands.value, colors: selectedColors.value, sizes: selectedSizes.value, min: minPrice.value, max: maxPrice.value, quality: quality.value, keyword: '', sort: sort.value, discount: discountOnly.value })
+    const products = filterCatalog(entries, { brands: selectedBrands.value, min: minPrice.value, max: maxPrice.value, quality: quality.value, keyword: '', sort: sort.value, discount: discountOnly.value })
     total.value = products.length
     totalPages.value = Math.ceil(products.length / 12)
     page = Math.max(1, Math.min(page, totalPages.value || 1))
@@ -370,7 +339,7 @@ const togglePrice = () => { sort.value = sort.value === 3 ? 4 : 3; void loadProd
 const openDetail = (_product: PmsProduct, url: string) => uni.navigateTo({ url })
 const openContact = (product: PmsProduct) => { consultedProduct.value = product; contactOpen.value = true }
 
-watch([selectedBrands, selectedColors, selectedSizes, minPrice, maxPrice, quality, discountOnly], () => { void loadProducts() })
+watch([selectedBrands, minPrice, maxPrice, quality, discountOnly], () => { void loadProducts() })
 watch([market,activeExchangeRates], () => { void loadProducts() })
 watch(locale, () => { minPrice.value = ''; maxPrice.value = ''; void refreshCategories(); void loadProducts(currentPage.value) })
 
@@ -438,8 +407,6 @@ function refreshCategories():Promise<void> {
   .sidebar-title { display:block; margin:12px 0 8px; padding-top:12px; border-top:1px solid #dce6fa; font-size:14px; font-weight:700; }
   .sidebar-brand { display:flex; align-items:center; font-size:12px; color:#304f83; line-height:26px; }
   .sidebar-brand checkbox { transform:scale(.6); width:20px; }
-  .sidebar-colors { display:flex; gap:6px; }
-  .sidebar-colors text { width:14px; height:14px; border-radius:50%; }
   .pc-filter-sidebar .quality-list { gap:4px; }
   .pc-filter-sidebar .quality-list button { padding:0 4px; height:28px; font-size:11px; line-height:26px; }
   .pc-filter-sidebar .price-inputs { gap:4px; }
@@ -624,12 +591,6 @@ function refreshCategories():Promise<void> {
   .filter-option.selected :deep(.uni-checkbox-input) { border-color:#244e76; background:#244e76; }
   .filter-option :deep(.uni-checkbox-input svg) { width:12px; height:12px; }
   .filter-option.selected :deep(.uni-checkbox-input path) { fill:#fff; }
-  .category-page .filter-drawer .filter-colors { align-items:center; gap:13px; min-height:38px; padding-inline:4px; }
-  .category-page .filter-drawer .filter-colors button { min-height:38px; }
-  .category-page .filter-drawer .filter-sizes { gap:8px; align-items:center; min-height:38px; }
-  .category-page .filter-drawer .filter-sizes button { min-width:40px; height:36px; padding:0 10px; font-size:13px; line-height:34px; }
-  .category-page .filter-drawer .filter-sizes button:hover { border-color:#244e76; }
-  .category-page .filter-drawer .filter-sizes > text { color:#8a98a8; font-size:12px; line-height:20px; }
   .category-page .filter-drawer .price-inputs { align-items:center; gap:10px; }
   .category-page .filter-drawer .price-inputs input {
     box-sizing:border-box;
@@ -724,10 +685,7 @@ function refreshCategories():Promise<void> {
     line-height:30px;
   }
   .category-page .catalog-layout .pc-filter-sidebar .price-inputs input,
-  .category-page .catalog-layout .pc-filter-sidebar .quality-list button,
-  .category-page .catalog-layout .pc-filter-sidebar .filter-sizes,
-  .category-page .catalog-layout .pc-filter-sidebar .filter-sizes > text,
-  .category-page .catalog-layout .pc-filter-sidebar .filter-sizes button {
+  .category-page .catalog-layout .pc-filter-sidebar .quality-list button {
     font-size:14px;
     font-weight:400;
     line-height:1.5;
@@ -739,10 +697,6 @@ function refreshCategories():Promise<void> {
     min-height:34px;
     padding:6px 8px;
     white-space:normal;
-  }
-  .category-page .catalog-layout .pc-filter-sidebar .filter-sizes > text {
-    display:block;
-    color:#81909d;
   }
 }
 </style>

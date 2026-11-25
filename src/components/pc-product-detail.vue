@@ -69,9 +69,7 @@
         </view>
         <view class="information-card below-recommendations">
           <view class="info-section">
-            <button class="info-heading" :aria-expanded="openSections.details" @click="toggleSection('details')">
-              <text>{{ t('商品详情') }}</text><view class="toggle-label"><text>{{ t(openSections.details ? '收起' : '展开') }}</text><image class="toggle-chevron" :class="{ expanded: openSections.details }" src="/static/home/detail-arrow.svg" mode="aspectFit" aria-hidden="true" /></view>
-            </button>
+            <view class="info-heading"><text>{{ t('商品详情') }}</text></view>
             <detail-collapse :open="openSections.details">
               <view class="info-box attributes">
               <view v-if="product.productSn"><text>{{ t('款号') }}</text><text>{{ t(product.productSn) }}</text></view>
@@ -82,17 +80,13 @@
             </detail-collapse>
           </view>
           <view v-if="product.subTitle || product.description" class="info-section">
-            <button class="info-heading" :aria-expanded="openSections.description" @click="toggleSection('description')">
-              <text>{{ t('商品描述') }}</text><view class="toggle-label"><text>{{ t(openSections.description ? '收起' : '展开') }}</text><image class="toggle-chevron" :class="{ expanded: openSections.description }" src="/static/home/detail-arrow.svg" mode="aspectFit" aria-hidden="true" /></view>
-            </button>
+            <view class="info-heading"><text>{{ t('商品描述') }}</text></view>
             <detail-collapse :open="openSections.description">
               <view class="info-box description-text">{{ (localized(product, 'description') || localized(product, 'subTitle')) }}</view>
             </detail-collapse>
           </view>
           <view v-if="detailContent" class="info-section rich-detail-section" :class="{ 'is-expanded': openSections.content }">
-            <button class="info-heading" :aria-expanded="openSections.content" @click="toggleSection('content')">
-              <text>{{ t('图文详情') }}</text><view class="toggle-label"><text>{{ t(openSections.content ? '收起' : '展开') }}</text><image class="toggle-chevron" :class="{ expanded: openSections.content }" src="/static/home/detail-arrow.svg" mode="aspectFit" aria-hidden="true" /></view>
-            </button>
+            <view class="info-heading"><text>{{ t('图文详情') }}</text></view>
             <detail-collapse :open="openSections.content">
               <view class="rich-detail"><rich-text :nodes="detailContent" /></view>
             </detail-collapse>
@@ -128,17 +122,18 @@
             </view>
           </view>
           <view v-for="spec in specList" :key="spec.id" class="spec-block">
-            <view class="spec-label"><text class="required">*</text>{{ t(localized(spec, 'name')) }}：<b>{{ displayOption(spec, selectedValue(spec.id)) }}</b></view>
+            <view class="spec-label"><text class="required">*</text>{{ t(localized(spec, 'name')) }}<b v-if="!isColorSpec(spec.name)">{{ displayOption(spec, selectedValue(spec.id)) }}</b></view>
             <view class="spec-options">
               <button
                 v-for="option in optionsFor(spec.id)"
                 :key="option.name"
                 :class="['spec-option', { selected: option.selected, 'color-spec-option': isColorSpec(spec.name) }]"
-                :title="displayOption(spec, option.name)"
-                :aria-pressed="!!option.selected"
+                :title="optionLabel(spec, option)"
+                :aria-label="optionLabel(spec, option)"
+                :aria-pressed="option.selected === true"
                 :disabled="!isSkuOptionAvailable(option, specOptions, skus)"
                 @click="selectSpec(option)"
-              >{{ displayOption(spec, option.name) }}</button>
+              ><image v-if="option.thumbnail" class="color-option-thumbnail" :src="option.thumbnail" mode="aspectFill" aria-hidden="true" /><text v-else>{{ optionLabel(spec, option) }}</text></button>
             </view>
           </view>
 
@@ -223,7 +218,7 @@ const selectedSku = computed(() => findSelectedSku(props.skus, props.specOptions
 const availableStock = computed(() => props.skus.length ? selectedSku.value ? availableSkuStock(selectedSku.value) : 0 : Math.max(0, Number(props.product.stock) || 0))
 watch(availableStock, stock => { quantity.value = Math.max(1, Math.min(quantity.value, stock)) })
 type SectionKey = 'details' | 'material' | 'description' | 'content'
-const closedSections = (): Record<SectionKey, boolean> => ({ details: false, material: false, description: false, content: false })
+const closedSections = (): Record<SectionKey, boolean> => ({ details: true, material: false, description: true, content: true })
 const mobileDetail = ref(false)
 const detailViewport = typeof window === 'undefined' ? undefined : window.matchMedia('(max-width:1023px)')
 const updateDetailViewport = () => { mobileDetail.value = detailViewport?.matches ?? false }
@@ -235,8 +230,9 @@ const detailContent = computed(() => {
   return localizedProductDetail(props.product, field)
 })
 const openSections = ref<Record<SectionKey, boolean>>(closedSections())
-const visibleImages = computed(() => props.images.filter(Boolean).slice(0, 10))
-watch(() => props.images, () => { currentImage.value = 0 })
+const selectedAlbum = computed(() => props.specOptions.find(option => option.selected && option.images?.length))
+const visibleImages = computed(() => (selectedAlbum.value?.images || props.images).filter(Boolean).slice(0, 10))
+watch(visibleImages, () => { currentImage.value = 0 })
 const activeImage = computed(() => visibleImages.value[currentImage.value] || props.product.pic || '/static/errorImage.jpg')
 const attrList = computed(() => props.attributes.filter((item) => item.value))
 const materialAttributes = computed(() => attrList.value.filter((item) => /材质|面料|成分|保养|洗涤|material|fabric|care/i.test(item.key)))
@@ -245,8 +241,14 @@ const generalAttributes = computed(() => attrList.value.filter((item) => !materi
 const optionsFor = (id: number) => props.specOptions.filter((item) => item.pid === id)
 const selectedValue = (id: number) => optionsFor(id).find((item) => item.selected)?.name || '请选择'
 const displayOption = (spec: PmsProductAttribute, value: string) => localizedOption(spec, value)
+const optionLabel = (spec: PmsProductAttribute, option: SpecOption) => {
+  if (option.thumbnail || /^color-[a-f0-9]+$/i.test(option.name)) {
+    return `${t('颜色')} ${optionsFor(spec.id).indexOf(option) + 1}`
+  }
+  return displayOption(spec, option.name)
+}
 const selectSpec = (option: SpecOption) => emit('select-spec', option)
-const toggleSection = (section: SectionKey) => { openSections.value[section] = !openSections.value[section] }
+const toggleSection = (section: SectionKey) => { if (section === 'material') openSections.value[section] = !openSections.value[section] }
 const moveImage = (direction: number) => { if (visibleImages.value.length) currentImage.value = (currentImage.value + direction + visibleImages.value.length) % visibleImages.value.length }
 const goHome = () => uni.switchTab({ url: '/pages/index/index' })
 const goCategory = () => searchProducts('', { categoryId: props.product.productCategoryId })
@@ -302,6 +304,7 @@ onBeforeUnmount(() => { recommendationRequest++ })
 .consult-mobile-label { display:none; }
 .stepper button:disabled,.consult:disabled { opacity:.45; cursor:not-allowed; box-shadow:none; }
 .color-spec-option { display:inline-flex; align-items:center; gap:8px; }
+.color-option-thumbnail { display:block; flex:none; width:20px; height:20px; }
 .mobile-gallery-swiper,.mobile-thumbnails,.mobile-image-count { display:none; }
 
 @media (min-width:0px) {

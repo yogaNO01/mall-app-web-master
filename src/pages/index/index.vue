@@ -1,5 +1,5 @@
 <template>
-  <view class="home-page" :class="{ 'locale-pt': locale !== 'zh', 'locale-es': locale === 'es' }">
+  <view class="home-page" :class="{ 'locale-pt': locale !== 'zh', 'locale-es': ['es', 'it', 'fr'].includes(locale) }">
     <h5-site-header />
     <view class="search-region"
       ><storefront-search v-model="searchDraft" @search="searchProducts" /></view

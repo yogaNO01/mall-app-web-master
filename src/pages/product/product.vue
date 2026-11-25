@@ -532,7 +532,7 @@ const initSpecList = (data: any) => {
         type: item.type,
         translations: {
           ...item.translations,
-          ...Object.fromEntries(['en','pt','es'].map(lang => [lang, { ...item.translations?.[lang], inputList: item.handAddStatus === 1 ? productAttributeValueList?.find((value: PmsProductAttributeValue) => value.productAttributeId === item.id)?.translations?.[lang]?.value || '' : item.translations?.[lang]?.inputList || '' }])),
+          ...Object.fromEntries(['en','pt','es','it','fr'].map(lang => [lang, { ...item.translations?.[lang], inputList: item.handAddStatus === 1 ? productAttributeValueList?.find((value: PmsProductAttributeValue) => value.productAttributeId === item.id)?.translations?.[lang]?.value || '' : item.translations?.[lang]?.inputList || '' }])),
         },
         handAddStatus: item.handAddStatus,
         inputList: item.handAddStatus === 1 ? productAttributeValueList?.find((value: PmsProductAttributeValue) => value.productAttributeId === item.id)?.value || item.inputList : item.inputList,
@@ -543,21 +543,20 @@ const initSpecList = (data: any) => {
         sort: item.sort,
       })
 
-      if (item.handAddStatus === 1) {
-        // 支持手动新增
-        const filterValueList = (productAttributeValueList || []).filter(
-          (v: PmsProductAttributeValue) => v.productAttributeId === item.id,
-        )
-        const inputList = filterValueList[0]?.value?.split(',') || []
-        for (const val of inputList) {
-          specChildList.value.push({ pid: item.id, pname: item.name, name: val })
-        }
-      } else if (item.handAddStatus === 0) {
-        // 不支持手动新增
-        const inputList = item.inputList?.split(',') || []
-        for (const val of inputList) {
-          specChildList.value.push({ pid: item.id, pname: item.name, name: val })
-        }
+      const saved = productAttributeValueList?.find((value: PmsProductAttributeValue) => value.productAttributeId === item.id)
+      let albums: Record<string, { thumbnail?: string; images?: string[] }> = {}
+      try {
+        const parsed = JSON.parse(saved?.translations?.zh?.colorAlbums || '{}')
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) albums = parsed
+      } catch { /* Older products may have no color album. */ }
+      const inputList = (saved?.value || item.inputList || '').split(',').filter(Boolean)
+      for (const name of inputList) {
+        const album = Object.prototype.hasOwnProperty.call(albums, name) ? albums[name] : undefined
+        specChildList.value.push({
+          pid: item.id, pname: item.name, name,
+          thumbnail: typeof album?.thumbnail === 'string' ? album.thumbnail : undefined,
+          images: Array.isArray(album?.images) ? album.images.filter(url => typeof url === 'string' && !!url).slice(0, 10) : undefined,
+        })
       }
     }
   }
@@ -591,7 +590,7 @@ const initAttrList = (data: any) => {
         (v: PmsProductAttributeValue) => v.productAttributeId === item.id,
       )
       const value = filterValueList[0]?.value || ''
-      attrList.value.push({ key: item.name, value, translations: Object.fromEntries(['en','pt','es'].map(lang => [lang, { key: item.translations?.[lang]?.name || '', value: filterValueList[0]?.translations?.[lang]?.value || '' }])) })
+      attrList.value.push({ key: item.name, value, translations: Object.fromEntries(['en','pt','es','it','fr'].map(lang => [lang, { key: item.translations?.[lang]?.name || '', value: filterValueList[0]?.translations?.[lang]?.value || '' }])) })
     }
   }
 }

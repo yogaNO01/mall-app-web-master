@@ -58,7 +58,7 @@ export const currencySymbol = (region:PriceRegion=market.value) => region==='cn'
 export const formatMoneyAmount = (amount: number,region:PriceRegion=market.value,withCurrency=true): string => {
   const rate=exchangeRates.value[marketCurrency(region)]
   if(!(rate>0))return withCurrency?`${marketCurrency(region)} —`:'—'
-  const formatted = new Intl.NumberFormat(locale.value === 'pt' ? 'pt-BR' : locale.value === 'en' ? 'en-US' : 'zh-CN', {
+  const formatted = new Intl.NumberFormat(locale.value === 'pt' ? 'pt-BR' : locale.value === 'zh' ? 'zh-CN' : locale.value, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount*rate)
@@ -68,7 +68,7 @@ export const formatMoneyAmount = (amount: number,region:PriceRegion=market.value
 export const formatProductMoney = (product: MoneyProduct, field: ProductMoneyField,region:PriceRegion=market.value,withCurrency=true): string => {
   const amount = regionalProductAmount(product, field, region)
   if(amount==null)return t('价格请咨询')
-  const formatted = new Intl.NumberFormat(locale.value === 'pt' ? 'pt-BR' : locale.value === 'en' ? 'en-US' : 'zh-CN', {minimumFractionDigits:2,maximumFractionDigits:2}).format(amount)
+  const formatted = new Intl.NumberFormat(locale.value === 'pt' ? 'pt-BR' : locale.value === 'zh' ? 'zh-CN' : locale.value, {minimumFractionDigits:2,maximumFractionDigits:2}).format(amount)
   return withCurrency?`${marketCurrency(region)} ${currencySymbol(region)}${formatted}`:formatted
 }
 

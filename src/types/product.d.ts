@@ -251,6 +251,8 @@ export type PmsPortalProductDetail = {
 
 /** 规格选项（前端专用） */
 export type SpecOption = {
+  thumbnail?: string
+  images?: string[]
   /** 规格ID */
   pid: number
   /** 规格名称 */
